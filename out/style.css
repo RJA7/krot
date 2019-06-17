@@ -1,0 +1,33 @@
+body, canvas {
+    padding: 0;
+    margin: 0;
+    border: 0;
+    overflow: hidden;
+}
+
+.dg, .dg input {
+    font: 13px "CONSOLAS" !important;
+}
+
+.dg .cr.function, .dg .string, .dg .number, .dg .boolean, .dg .color {
+    border-left: none !important;
+}
+
+.full-width-property .property-name {
+    width: 100% !important;
+}
+
+.dg li.folder {
+    border-left: 0 !important;
+}
+
+.dg li.title {
+    margin-left: 0 !important;
+}
+
+@font-face {
+    font-family: "Lobster";
+    src: 
+            url("fonts/Lobster.woff") format("woff"), 
+            url("fonts/Lobster.woff2") format("woff2");
+}
