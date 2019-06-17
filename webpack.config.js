@@ -1,0 +1,28 @@
+const path = require("path");
+
+module.exports = {
+  entry: {main: ["./src/krot.js"]},
+  devtool: "inline-source-map",
+  mode: "development",
+
+  output: {
+    filename: "bundle.js",
+    path: path.resolve(__dirname, "out")
+  },
+
+  resolve: {
+    extensions: [".tsx", ".ts", ".js"]
+  },
+
+  module: {
+    rules: [
+      {
+        test: /\.(png|jpg)$/,
+        loader: "file-loader",
+        options: {
+          name: "[name]-[hash:8].[ext]",
+        },
+      }
+    ]
+  }
+};

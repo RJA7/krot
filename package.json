@@ -1,0 +1,24 @@
+{
+  "name": "krot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "node ./webpack.server.js",
+    "build": "node ./node_modules/webpack/bin/webpack --watch"
+  },
+  "author": "RJA",
+  "license": "ISC",
+  "dependencies": {
+    "dat.gui": "^0.7.6",
+    "lodash": "^4.17.11",
+    "stringify-object": "^3.3.0",
+    "webfontloader": "^1.6.28"
+  },
+  "devDependencies": {
+    "file-loader": "latest",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.3.0",
+    "webpack-dev-server": "^3.2.1"
+  }
+}
