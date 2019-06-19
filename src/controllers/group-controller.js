@@ -53,6 +53,7 @@ export class GroupController {
 
   hide() {
     this.__visible = false;
+    this.debugGraphics.clear();
     this.gui.hide();
   }
 
