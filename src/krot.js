@@ -71,6 +71,28 @@ class Krot {
     rawUi && this.setRawUi(rawUi);
   }
 
+  moveDown() {
+    if (!this.selectedObject || this.selectedObject === this.ground.tree) return;
+    this.selectedObject.parent.moveDown(this.selectedObject);
+    this.refreshTreeAndHash();
+  }
+
+  moveUp() {
+    if (!this.selectedObject || this.selectedObject === this.ground.tree) return;
+    this.selectedObject.parent.moveUp(this.selectedObject);
+    this.refreshTreeAndHash();
+  }
+
+  destroy() {
+    if (!this.selectedObject || this.selectedObject === this.ground.tree) return;
+
+    if (!confirm(`Destroy ${this.selectedObject.name} and its children?`)) return;
+
+    this.selectedObject.destroy();
+    this.refreshTreeAndHash();
+    this.selectedObject.controller.gui.hide();
+  }
+
   clone() {
     if (!this.selectedObject || this.selectedObject === this.ground.tree) return;
 
@@ -150,6 +172,9 @@ class Krot {
     editGui.add(this, "undo");
     editGui.add(this, "redo");
     editGui.add(this, "clone");
+    editGui.add(this, "moveDown");
+    editGui.add(this, "moveUp");
+    editGui.add(this, "destroy");
 
     const viewGui = gui.addFolder("View");
     const nameController = viewGui.add(handler, "name");

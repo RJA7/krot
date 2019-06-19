@@ -6,7 +6,6 @@ export class GroupController {
     this.getTreeHash = getTreeHash;
     this.debugGraphics = debugGraphics;
     this.generalFolder = gui.addFolder("General");
-    this.actionsFolder = gui.addFolder("Actions");
     this.object = {name: "", parent: {name: ""}};
     this.onTreeChange = new Phaser.Signal();
     this.folders = [this.generalFolder];
@@ -27,12 +26,6 @@ export class GroupController {
       {prop: "pivot.x", defaults: 0, step: 1, round: true},
       {prop: "pivot.y", defaults: 0, step: 1, round: true},
     ].map(createControllerBuilder(this, this.generalFolder));
-
-    [
-      "moveUp",
-      "moveDown",
-      "destroy",
-    ].forEach(action => this.actionsFolder.add(this, action));
 
     this.parentController = generalControllers.find(c => c.property === "parent");
 
@@ -89,29 +82,6 @@ export class GroupController {
 
   get parent() {
     return this.object.parent.name;
-  }
-
-  moveDown() {
-    this.object.parent.moveDown(this.object);
-    this.onTreeChange.dispatch();
-  }
-
-  moveUp() {
-    this.object.parent.moveUp(this.object);
-    this.onTreeChange.dispatch();
-  }
-
-  destroy() {
-    if (Object.values(this.getTreeHash())[0] === this.object) {
-      alert("Cannot remove root");
-      return;
-    }
-
-    if (!confirm(`Destroy ${this.object.name} and its children?`)) return;
-
-    this.object.destroy();
-    this.onTreeChange.dispatch();
-    this.gui.hide();
   }
 
   getSaveObject(object) {
