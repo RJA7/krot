@@ -38,6 +38,7 @@ class Krot {
 
     this.controllers.forEach(c => c.onTreeChange.add(this.refreshTreeAndHash, this));
     this.setRawUi(this.history.getItem());
+    this.ground.align();
   }
 
   new() {
@@ -47,6 +48,7 @@ class Krot {
 
     this.history.clear();
     this.setRawUi();
+    this.ground.align();
   }
 
   open() {
@@ -56,6 +58,7 @@ class Krot {
 
     this.history.clear();
     this.handler.open();
+    this.ground.align();
   }
 
   undo() {
@@ -124,7 +127,6 @@ class Krot {
     this.widthController.setValue(rawUi.width);
     this.heightController.setValue(rawUi.height);
 
-    this.ground.align();
     this.refreshTreeAndHash();
 
     if (this.selectedObject) {
