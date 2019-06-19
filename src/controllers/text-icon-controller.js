@@ -1,3 +1,4 @@
+import { TextIcon } from "../../../cookie-crush-2/lib/krot/text-icon";
 import { GUI } from "dat.gui";
 
 export class TextIconController {
@@ -34,8 +35,13 @@ export class TextIconController {
 
       Object.defineProperty(this, prop, {
         set: (v) => {
-          this.object.icon[this.iconKey][prop] = v;
-          this.object.dirty = true;
+          const item = this.object.icon[this.iconKey];
+          item[prop] = v;
+
+          this.object.icon = {
+            ...this.object.icon,
+            [this.iconKey]: new TextIcon(item.texture, item.x, item.y, item.scaleX, item.scaleY),
+          };
         },
         get: () => {
           return this.object.icon[this.iconKey][prop];
