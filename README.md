@@ -27,3 +27,7 @@ TODO
 
 ### Migration
 TODO
+
+### TODOs
+Fix nineslice children or reject
+Make nineslice support trimmed texture
