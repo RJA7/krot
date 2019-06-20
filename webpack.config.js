@@ -1,7 +1,7 @@
 const path = require("path");
 
 module.exports = {
-  entry: {main: ["./src/krot.js"]},
+  entry: {main: ["./src/gt.js"]},
   devtool: "inline-source-map",
   mode: "development",
 

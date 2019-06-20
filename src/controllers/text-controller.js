@@ -1,7 +1,7 @@
 import { createControllerBuilder } from "./builder";
 import { DisplayController } from "./display-controller";
 import { TextIconController } from "./text-icon-controller";
-import { TextIcon } from "../../../cookie-crush-2/lib/krot/text-icon";
+import { TextIcon } from "../../../cookie-crush-2/lib/gt/text-icon";
 import { fonts } from "../config";
 
 export class TextController extends DisplayController {

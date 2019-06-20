@@ -1,4 +1,4 @@
-import { getImageByKeyOrFrameName } from "../../../cookie-crush-2/lib/krot/utils";
+import { getImageByKeyOrFrameName } from "../../../cookie-crush-2/lib/gt/utils";
 import { DisplayController } from "./display-controller";
 import { createControllerBuilder } from "./builder";
 

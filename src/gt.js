@@ -3,7 +3,7 @@ import { SpriteController } from "./controllers/sprite-controller";
 import { GroupController } from "./controllers/group-controller";
 import { TextController } from "./controllers/text-controller";
 import { defaultRawUi, fonts } from "./config";
-import { populate } from "../../cookie-crush-2/lib/krot";
+import { populate } from "../../cookie-crush-2/lib/gt";
 import { Handler } from "./handler";
 import { GUI } from "dat.gui";
 import { Ground } from "./ground";
@@ -11,7 +11,7 @@ import { History } from "./history";
 import { makeUniqueName } from "./utils";
 import WebFont from "webfontloader";
 
-class Krot {
+class Gt {
   constructor() {
     this.createGui();
     this.spriteController = new SpriteController(new GUI({width: 300}), () => this.getHash(), this.ground.debugGraphics);
@@ -305,7 +305,7 @@ function createGame() {
     },
 
     create() {
-      window.krot = new Krot();
+      new Gt();
     },
   });
 }
