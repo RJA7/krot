@@ -15,7 +15,9 @@ const server = new WebpackDevServer(compiler, {
     hot: false,
     contentBase: [
       path.resolve(__dirname, "out"),
-      path.resolve(__dirname, "../cookie-crush-2/spritesheets"),
+      path.resolve(__dirname, "../cookie-crush-2/BuildSource/assets/images"),
+      path.resolve(__dirname, "../cookie-crush-2/BuildSource/assets/img"),
+      path.resolve(__dirname, "../cookie-crush-2/BuildSource/assets/spritesheets"),
     ],
   }
 );

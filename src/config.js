@@ -12,6 +12,5 @@ export const defaultRawUi = {
 };
 
 export const fonts = [
-  "Arial",
   "Lobster",
 ];

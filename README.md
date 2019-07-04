@@ -11,7 +11,8 @@ And this project has some pointers to that directory. So you need to clone this 
 into same folder with cookie crush. Example: `projects/cookie-crush-2` -> `projects/gt`
 Note also that `cookie-crush-2` folder should be exactly the same, because it's the part of path.
 2. Fonts. You can find fonts in `/out folder`. So when adding some new fonts to game, you need
-also put them here.
+also to put them here.
+3. Paths to assets (spritesheets, images, img).
 
 ### Start using
 1. Clone repository with the rules described above.

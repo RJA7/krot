@@ -14,10 +14,11 @@ import WebFont from "webfontloader";
 class Gt {
   constructor() {
     this.createGui();
-    this.spriteController = new SpriteController(new GUI({width: 300}), () => this.getHash(), this.ground.debugGraphics);
-    this.groupController = new GroupController(new GUI({width: 300}), () => this.getHash(), this.ground.debugGraphics);
-    this.textController = new TextController(new GUI({width: 300}), () => this.getHash(), this.ground.debugGraphics);
-    this.nineSliceController = new NineSliceController(new GUI({width: 300}), () => this.getHash(), this.ground.debugGraphics);
+    const getParams = () => [new GUI({width: 300}), () => this.getHash(), this.ground.debugGraphics];
+    this.spriteController = new SpriteController(...getParams());
+    this.groupController = new GroupController(...getParams());
+    this.textController = new TextController(...getParams());
+    this.nineSliceController = new NineSliceController(...getParams());
     this.controllers = [this.groupController, this.spriteController, this.textController, this.nineSliceController];
     this.history = new History();
     this.selectedObject = null;
@@ -211,7 +212,7 @@ class Gt {
   sprite() {
     const sprite = game.add.sprite();
     sprite.controller = this.spriteController;
-    sprite.frameName = "__missing";
+    sprite.textureName = "__missing";
     this.add(sprite, "sprite");
   }
 
@@ -232,7 +233,7 @@ class Gt {
   nineSlice() {
     const nineSlice = new Phaser.NineSlice(game);
     nineSlice.controller = this.nineSliceController;
-    nineSlice.frameName = "__missing";
+    nineSlice.textureName = "__missing";
     this.add(nineSlice, "nineSlice");
   }
 
@@ -272,7 +273,9 @@ class Gt {
   }
 }
 
-const assetsContext = require.context("../../cookie-crush-2/spritesheets", true, /\.(png|jpg)$/);
+const spritesheetsContext = require.context("../../cookie-crush-2/BuildSource/assets/spritesheets");
+const imagesContext = require.context("../../cookie-crush-2/BuildSource/assets/images");
+const imgContext = require.context("../../cookie-crush-2/BuildSource/assets/img");
 
 WebFont.load({
   fontinactive: (familyName) => console.warn(`Cannot load ${familyName} font.`),
@@ -296,10 +299,24 @@ function createGame() {
     },
 
     preload() {
-      assetsContext.keys().forEach(key => {
+      const loadImage = (key) => {
         this.load.image(
           key.split("/").pop().split(".").shift(),
           key.slice(2),
+        );
+      };
+
+      imagesContext.keys().forEach(loadImage);
+      imgContext.keys().forEach(loadImage);
+
+      spritesheetsContext.keys().forEach((key) => {
+        if (key.endsWith(".json")) return;
+
+        this.load.atlasJSONHash(
+          key,
+          key.slice(2),
+          null,
+          spritesheetsContext(`${key.slice(0, -4)}.json`),
         );
       });
     },

@@ -6,7 +6,7 @@ export class SpriteController extends DisplayController {
     super(gui, getTreeHash, debugGraphics);
 
     [
-      {prop: "frameName", defaults: ""},
+      {prop: "textureName", defaults: ""},
     ].forEach(createControllerBuilder(this, this.generalFolder));
   }
 
@@ -14,7 +14,7 @@ export class SpriteController extends DisplayController {
     return {
       ...super.getSaveObject(object),
       type: "Sprite",
-      frameName: object.frameName,
+      textureName: object.textureName,
     };
   }
 }

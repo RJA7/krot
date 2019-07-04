@@ -1,4 +1,4 @@
-import { getImageByKeyOrFrameName } from "../../../cookie-crush-2/lib/gt/utils";
+import { getImageByTextureName } from "../../../cookie-crush-2/lib/gt/utils";
 import { DisplayController } from "./display-controller";
 import { createControllerBuilder } from "./builder";
 
@@ -7,7 +7,7 @@ export class NineSliceController extends DisplayController {
     super(gui, getTreeHash, debugGraphics);
 
     [
-      {prop: "frameName", defaults: ""},
+      {prop: "textureName", defaults: ""},
       {prop: "x0", defaults: 0},
       {prop: "y0", defaults: 0},
       {prop: "x1", defaults: 0},
@@ -19,7 +19,7 @@ export class NineSliceController extends DisplayController {
     return {
       ...super.getSaveObject(object),
       type: "NineSlice",
-      frameName: object.frameName,
+      textureName: object.textureName,
       x0: object.x0,
       x1: object.x1,
       y0: object.y0,
@@ -33,12 +33,12 @@ export class NineSliceController extends DisplayController {
     if (!this.__visible || !this.object.alive) return;
 
     const object = this.object;
-    const frameName = object.originFrameName;
-    const image = getImageByKeyOrFrameName(frameName);
+    const textureName = object.originTextureName;
+    const image = getImageByTextureName(textureName);
 
     if (!image) return;
 
-    const frame = image.frameData.getFrameByName(frameName) || image.frameData.getFrame(0);
+    const frame = image.frameData.getFrameByName(textureName) || image.frameData.getFrame(0);
     const lw = frame.sourceSizeW;
     const lh = frame.sourceSizeH;
     const w = object.width / object.scale.x;
