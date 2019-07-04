@@ -135,15 +135,24 @@ class Gt {
 
   setRawUi(rawUi = defaultRawUi) {
     const layout = {};
+
+    const ignoreMap = rawUi.list.reduce((acc, raw) => {
+      acc[raw.name] = raw.ignore;
+      return acc;
+    }, {});
+
+    rawUi.list.forEach(raw => raw.ignore = false);
     populate(layout, rawUi);
 
     this.ground.clean();
     this.ground.setTree(layout[rawUi.list[0].name]);
 
-    rawUi.list.forEach(raw => {
+    rawUi.list.forEach((raw) => {
       const object = layout[raw.name];
       object.controller = this[`${raw.type.charAt(0).toLowerCase()}${raw.type.slice(1)}Controller`];
       object.class = raw.class;
+      object.ignore = ignoreMap[raw.name];
+      raw.ignore = ignoreMap[raw.name];
     });
 
     this.nameController.setValue(rawUi.name);

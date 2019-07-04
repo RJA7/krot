@@ -47,7 +47,7 @@ export class History {
   put(rawUi) {
     this.data.list.length = this.data.pointer + 1;
     this.data.list.push(rawUi);
-    this.data.list.length > 1000 && this.data.list.shift();
+    this.data.list.length > 100 && this.data.list.shift();
     this.data.pointer = this.data.list.length - 1;
   }
 
