@@ -1,6 +1,6 @@
 import { createControllerBuilder } from "./builder";
 import { DisplayController } from "./display-controller";
-import { TextIconController } from "./text-icon-controller";
+import { TextIconsController } from "./text-icons-controller";
 import { TextIcon } from "../../../cookie-crush-2/lib/gt/text-icon";
 import { fonts } from "../config";
 
@@ -9,15 +9,15 @@ export class TextController extends DisplayController {
     super(gui, getTreeHash, debugGraphics);
 
     this.textFolder = gui.addFolder("Text");
-    this.iconFolder = null;
+    this.iconsFolder = null;
     this.styleFolder = gui.addFolder("Style");
     this.folders.push(this.textFolder, this.styleFolder);
     this.object.fontSize = 60;
     this.object.text = "";
-    this.object.icon = {};
+    this.object.icons = {};
     this.object.padding = {x: 0, y: 0};
 
-    this.iconController = new TextIconController(() => this.refreshIconsFolder());
+    this.iconsController = new TextIconsController(() => this.refreshIconsFolder());
 
     this.object.style = {
       shadowOffsetX: 0,
@@ -66,36 +66,36 @@ export class TextController extends DisplayController {
 
   hide() {
     super.hide();
-    this.iconController.hide();
+    this.iconsController.hide();
   }
 
   refreshIconsFolder() {
-    this.iconFolder && this.generalFolder.removeFolder(this.iconFolder);
-    this.iconFolder = this.generalFolder.addFolder("Icons");
-    this.iconFolder.open();
+    this.iconsFolder && this.generalFolder.removeFolder(this.iconsFolder);
+    this.iconsFolder = this.generalFolder.addFolder("Icons");
+    this.iconsFolder.open();
 
     const addNewKey = "+ Add New Icon +";
 
-    this.iconFolder.add({
+    this.iconsFolder.add({
       [addNewKey]: () => {
         let i = 0;
         let iconKey = `icon_${i}`;
 
-        while (this.object.icon[iconKey]) {
+        while (this.object.icons[iconKey]) {
           iconKey = `icon_${++i}`;
         }
 
-        this.object.icon[iconKey] = new TextIcon("__missing");
+        this.object.icons[iconKey] = new TextIcon("__missing");
 
         this.refreshIconsFolder();
-        this.iconController.setObject(this.object, iconKey);
+        this.iconsController.setObject(this.object, iconKey);
       }
     }, addNewKey);
 
-    Object.keys(this.object.icon).forEach(key => {
-      this.iconFolder.add({
+    Object.keys(this.object.icons).forEach(key => {
+      this.iconsFolder.add({
         [key]: () => {
-          this.iconController.setObject(this.object, key);
+          this.iconsController.setObject(this.object, key);
         }
       }, key);
     });
@@ -109,10 +109,10 @@ export class TextController extends DisplayController {
     return this.object.text;
   }
 
-  iconToJSON(icon) {
+  iconsToJSON(icons) {
     return JSON.stringify(
-      Object.keys(icon).reduce((acc, key) => {
-        const value = icon[key];
+      Object.keys(icons).reduce((acc, key) => {
+        const value = icons[key];
         acc[key] = {texture: value.texture};
         value.x ? acc[key].x = value.x : "";
         value.y ? acc[key].y = value.y : "";
@@ -219,7 +219,7 @@ export class TextController extends DisplayController {
       font: object.font,
       fontWeight: object.fontWeight,
       fontStyle: object.fontStyle,
-      icon: this.iconToJSON(object.icon),
+      icons: this.iconsToJSON(object.icons),
 
       style: {
         shadowOffsetX: object.style.shadowOffsetX,

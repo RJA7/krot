@@ -1,21 +1,21 @@
 import { TextIcon } from "../../../cookie-crush-2/lib/gt/text-icon";
 import { GUI } from "dat.gui";
 
-export class TextIconController {
+export class TextIconsController {
   constructor(refreshIconsFolder) {
     const gui = new GUI({width: 300});
     const self = this;
 
     this.iconKey = "default";
-    this.object = {icon: {[this.iconKey]: {}}};
+    this.object = {icons: {[this.iconKey]: {}}};
 
     gui.add({
       set key(v) {
-        if (self.object.icon[v]) return;
-        const icon = self.object.icon[self.iconKey];
-        delete self.object.icon[self.iconKey];
+        if (self.object.icons[v]) return;
+        const icons = self.object.icons[self.iconKey];
+        delete self.object.icons[self.iconKey];
         self.iconKey = v;
-        self.object.icon[self.iconKey] = icon;
+        self.object.icons[self.iconKey] = icons;
         self.object.dirty = true;
         refreshIconsFolder();
       },
@@ -31,20 +31,20 @@ export class TextIconController {
       {prop: "scaleX", defaults: 1},
       {prop: "scaleY", defaults: 1},
     ].forEach(({prop, defaults}) => {
-      this.object.icon[this.iconKey][prop] = defaults;
+      this.object.icons[this.iconKey][prop] = defaults;
 
       Object.defineProperty(this, prop, {
         set: (v) => {
-          const item = this.object.icon[this.iconKey];
+          const item = this.object.icons[this.iconKey];
           item[prop] = v;
 
-          this.object.icon = {
-            ...this.object.icon,
+          this.object.icons = {
+            ...this.object.icons,
             [this.iconKey]: new TextIcon(item.texture, item.x, item.y, item.scaleX, item.scaleY),
           };
         },
         get: () => {
-          return this.object.icon[this.iconKey][prop];
+          return this.object.icons[this.iconKey][prop];
         }
       });
 
@@ -54,7 +54,7 @@ export class TextIconController {
     gui.add({
       remove: () => {
         if (!confirm("Remove icon?")) return;
-        delete this.object.icon[this.iconKey];
+        delete this.object.icons[this.iconKey];
         this.object.dirty = true;
         this.hide();
         refreshIconsFolder();
