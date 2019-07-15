@@ -143,7 +143,7 @@ class Gt {
     const layout = {};
 
     const ignoreMap = rawUi.list.reduce((acc, raw) => {
-      acc[raw.name] = raw.ignore;
+      acc[raw.name] = Boolean(raw.ignore);
       return acc;
     }, {});
 
@@ -256,6 +256,7 @@ class Gt {
   add(object, prefix) {
     object.name = makeUniqueName(prefix, this.hash);
     object.class = "";
+    object.ignore = false;
     (this.selectedObject || this.ground.tree).addChild(object);
 
     this.refreshTreeAndHash();
