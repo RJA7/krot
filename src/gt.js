@@ -11,6 +11,12 @@ import { History } from "./history";
 import { makeUniqueName } from "./utils";
 import WebFont from "webfontloader";
 
+window.G = {
+  txt(text) {
+    return text;
+  }
+};
+
 class Gt {
   constructor() {
     this.createGui();

@@ -6,8 +6,8 @@ export class DisplayController extends GroupController {
     super(gui, getTreeHash, debugGraphics);
 
     [
-      {prop: "anchor.x", defaults: 0, step: 0.1},
-      {prop: "anchor.y", defaults: 0, step: 0.1},
+      {prop: "anchor.x", defaults: 0, step: 0.01},
+      {prop: "anchor.y", defaults: 0, step: 0.01},
       {prop: "inputEnabled", defaults: false},
       {prop: "scaleOnClick", defaults: false},
     ].forEach(createControllerBuilder(this, this.generalFolder));
