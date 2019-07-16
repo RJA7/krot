@@ -71,7 +71,7 @@ export class Handler {
       `/* tslint:disable */
 const rawUi = ${stringifyObject(data)};
 
-import { populate } from "lib/gt";
+import { populate } from "lib/gt/populate";
 
 export type ${this.layoutName}Filter = Partial<{
 ${[...fields, ...classFields].map(name => `  ${name}: boolean;`).join("\n")}
