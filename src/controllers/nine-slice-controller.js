@@ -33,12 +33,11 @@ export class NineSliceController extends DisplayController {
     if (!this.__visible || !this.object.alive) return;
 
     const object = this.object;
-    const textureName = object.originTextureName;
-    const image = getImageByTextureName(textureName);
+    const image = getImageByTextureName(object.textureName);
 
     if (!image) return;
 
-    const frame = image.frameData.getFrameByName(textureName) || image.frameData.getFrame(0);
+    const frame = image.frameData.getFrameByName(object.textureName) || image.frameData.getFrame(0);
     const lw = frame.sourceSizeW;
     const lh = frame.sourceSizeH;
     const w = object.width / object.scale.x;
