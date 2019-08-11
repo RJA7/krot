@@ -1,12 +1,12 @@
-import { TextIcon } from "../../../cookie-crush-2/lib/gt/text-icon";
-import { GUI } from "dat.gui";
+const {TextIcon} = require('../../../module');
+const {GUI} = require('dat.gui');
 
-export class TextIconsController {
+class TextIconsController {
   constructor(refreshIconsFolder) {
     const gui = new GUI({width: 300});
     const self = this;
 
-    this.iconKey = "default";
+    this.iconKey = 'default';
     this.object = {icons: {[this.iconKey]: {}}};
 
     gui.add({
@@ -22,14 +22,14 @@ export class TextIconsController {
       get key() {
         return self.iconKey;
       },
-    }, "key");
+    }, 'key');
 
     [
-      {prop: "texture", defaults: ""},
-      {prop: "x", defaults: 0},
-      {prop: "y", defaults: 0},
-      {prop: "scaleX", defaults: 1},
-      {prop: "scaleY", defaults: 1},
+      {prop: 'texture', defaults: ''},
+      {prop: 'x', defaults: 0},
+      {prop: 'y', defaults: 0},
+      {prop: 'scaleX', defaults: 1},
+      {prop: 'scaleY', defaults: 1},
     ].forEach(({prop, defaults}) => {
       this.object.icons[this.iconKey][prop] = defaults;
 
@@ -38,14 +38,14 @@ export class TextIconsController {
           const item = this.object.icons[this.iconKey];
           item[prop] = v;
 
-          this.object.icons = {
-            ...this.object.icons,
-            [this.iconKey]: new TextIcon(item.texture, item.x, item.y, item.scaleX, item.scaleY),
-          };
+          // this.object.icons = {
+          //   ...this.object.icons,
+          //   [this.iconKey]: new TextIcon(item.texture, item.x, item.y, item.scaleX, item.scaleY),
+          // };
         },
         get: () => {
           return this.object.icons[this.iconKey][prop];
-        }
+        },
       });
 
       gui.add(this, prop);
@@ -53,13 +53,13 @@ export class TextIconsController {
 
     gui.add({
       remove: () => {
-        if (!confirm("Remove icon?")) return;
+        if (!confirm('Remove icon?')) return;
         delete this.object.icons[this.iconKey];
         this.object.dirty = true;
         this.hide();
         refreshIconsFolder();
-      }
-    }, "remove");
+      },
+    }, 'remove');
 
     gui.hide();
     this.gui = gui;
@@ -80,3 +80,5 @@ export class TextIconsController {
     this.gui.hide();
   }
 }
+
+module.exports = {TextIconsController};

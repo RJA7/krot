@@ -1,6 +1,6 @@
-import { defaultRawUi } from "./config";
+const {defaultRawUi} = require('./config');
 
-export class History {
+class History {
   constructor() {
     this.data = {
       pointer: -1,
@@ -14,12 +14,12 @@ export class History {
     let data;
 
     try {
-      data = JSON.parse(localStorage.getItem("data"));
-    } catch (e) { 
+      data = JSON.parse(localStorage.getItem('data'));
+    } catch (e) {
       // noop
     }
 
-    if (data && "pointer" in data && data.list && data.list.length) {
+    if (data && 'pointer' in data && data.list && data.list.length) {
       this.data = data;
     } else {
       this.clear();
@@ -32,7 +32,7 @@ export class History {
   }
 
   save() {
-    localStorage.setItem("data", JSON.stringify(this.data));
+    localStorage.setItem('data', JSON.stringify(this.data));
   }
 
   isChanged(rawUi) {
@@ -75,3 +75,5 @@ export class History {
     return this.getItem();
   }
 }
+
+module.exports = {History};

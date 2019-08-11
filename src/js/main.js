@@ -1,55 +1,49 @@
-import { NineSliceController } from "./controllers/nine-slice-controller";
-import { SpriteController } from "./controllers/sprite-controller";
-import { GroupController } from "./controllers/group-controller";
-import { TextController } from "./controllers/text-controller";
-import { defaultRawUi, fonts } from "./config";
-import { populate } from "../../cookie-crush-2/lib/gt";
-import { Handler } from "./handler";
-import { GUI } from "dat.gui";
-import { Ground } from "./ground";
-import { History } from "./history";
-import { makeUniqueName } from "./utils";
-import WebFont from "webfontloader";
+const {NineSliceController} = require('./controllers/nine-slice-controller');
+const {SpriteController} = require('./controllers/sprite-controller');
+const {ContainerController} = require('./controllers/container-controller');
+const {TextController} = require('./controllers/text-controller');
+const {defaultRawUi} = require('./config');
+const {populate} = require('../../module');
+const {Handler} = require('./handler');
+const {GUI} = require('dat.gui');
+const {Ground} = require('./ground');
+const {History} = require('./history');
+const {makeUniqueName} = require('./utils');
+const WebFont = require('webfontloader'); // todo
+const PIXI = require('pixi.js');
 
-window.G = {
-  txt(text) {
-    return text;
-  }
-};
-
-class Gt {
+class Krot {
   constructor() {
     this.createGui();
     const getParams = () => [new GUI({width: 300}), () => this.getHash(), this.ground.debugGraphics];
     this.spriteController = new SpriteController(...getParams());
-    this.groupController = new GroupController(...getParams());
+    this.containerController = new ContainerController(...getParams());
     this.textController = new TextController(...getParams());
     this.nineSliceController = new NineSliceController(...getParams());
-    this.controllers = [this.groupController, this.spriteController, this.textController, this.nineSliceController];
+    this.controllers = [this.containerController, this.spriteController, this.textController, this.nineSliceController];
     this.history = new History();
     this.selectedObject = null;
     this.hash = {};
 
-    game.time.events.loop(5000, () => this.history.save());
-    window.addEventListener("blur", () => this.history.save());
-    window.addEventListener("beforeunload", () => this.history.save());
-    window.addEventListener("blur", () => this.history.putIfChanged(this.handler.getRawUi()), true);
+    window.addEventListener('blur', () => this.history.save());
+    window.addEventListener('beforeunload', () => this.history.save());
+    window.addEventListener('blur', () => this.history.putIfChanged(this.handler.getRawUi()), true);
 
-    window.addEventListener("click", (e) => {
-      const classes = ["function", "slider"];
+    window.addEventListener('click', (e) => {
+      const classes = ['function', 'slider'];
 
-      if (e.target.type === "checkbox" || classes.find(name => e.target.classList.contains(name))) {
+      if (e.target.type === 'checkbox' || classes.find(name => e.target.classList.contains(name))) {
         this.history.putIfChanged(this.handler.getRawUi());
       }
     }, true);
 
-    this.controllers.forEach(c => c.onTreeChange.add(this.refreshTreeAndHash, this));
+    this.controllers.forEach(c => c.onTreeChange.add(() => this.refreshTreeAndHash()));
     this.setRawUi(this.history.getItem());
     this.ground.align();
   }
 
   new() {
-    if (confirm("Save current file?")) {
+    if (confirm('Save current file?')) {
       return this.handler.save();
     }
 
@@ -59,7 +53,7 @@ class Gt {
   }
 
   open() {
-    if (confirm("Save current file?")) {
+    if (confirm('Save current file?')) {
       return this.handler.save();
     }
 
@@ -108,7 +102,7 @@ class Gt {
     const originNameCopyNameMap = {};
 
     const makeCopyName = name => {
-      const _index = name.lastIndexOf("_");
+      const _index = name.lastIndexOf('_');
 
       if (_index === -1 || isNaN(Number(name.slice(_index + 1)))) {
         return makeUniqueName(name, this.hash);
@@ -142,12 +136,6 @@ class Gt {
   setRawUi(rawUi = defaultRawUi) {
     const layout = {};
 
-    const ignoreMap = rawUi.list.reduce((acc, raw) => {
-      acc[raw.name] = Boolean(raw.ignore);
-      return acc;
-    }, {});
-
-    rawUi.list.forEach(raw => raw.ignore = false);
     populate(layout, rawUi);
 
     this.ground.clean();
@@ -157,8 +145,6 @@ class Gt {
       const object = layout[raw.name];
       object.controller = this[`${raw.type.charAt(0).toLowerCase()}${raw.type.slice(1)}Controller`];
       object.class = raw.class;
-      object.ignore = ignoreMap[raw.name];
-      raw.ignore = ignoreMap[raw.name];
     });
 
     this.nameController.setValue(rawUi.name);
@@ -179,32 +165,32 @@ class Gt {
     const handler = new Handler((rawUi) => this.setRawUi(rawUi), ground);
     const gui = new GUI();
 
-    const fileGui = gui.addFolder("File");
-    fileGui.add(this, "new");
-    fileGui.add(this, "open");
-    fileGui.add(handler, "save");
+    const fileGui = gui.addFolder('File');
+    fileGui.add(this, 'new');
+    fileGui.add(this, 'open');
+    fileGui.add(handler, 'save');
 
-    const editGui = gui.addFolder("Edit");
-    editGui.add(this, "undo");
-    editGui.add(this, "redo");
-    editGui.add(this, "clone");
-    editGui.add(this, "moveDown");
-    editGui.add(this, "moveUp");
-    editGui.add(this, "destroy");
+    const editGui = gui.addFolder('Edit');
+    editGui.add(this, 'undo');
+    editGui.add(this, 'redo');
+    editGui.add(this, 'clone');
+    editGui.add(this, 'moveDown');
+    editGui.add(this, 'moveUp');
+    editGui.add(this, 'destroy');
 
-    const viewGui = gui.addFolder("View");
-    const nameController = viewGui.add(handler, "name");
-    const widthController = viewGui.add(ground, "width", 0);
-    const heightController = viewGui.add(ground, "height", 0);
+    const viewGui = gui.addFolder('View');
+    const nameController = viewGui.add(handler, 'name');
+    const widthController = viewGui.add(ground, 'width', 0);
+    const heightController = viewGui.add(ground, 'height', 0);
 
-    const objectGui = gui.addFolder("Object");
-    objectGui.add(this, "group");
-    objectGui.add(this, "sprite");
-    objectGui.add(this, "text");
-    objectGui.add(this, "nineSlice");
+    const objectGui = gui.addFolder('Object');
+    objectGui.add(this, 'container');
+    objectGui.add(this, 'sprite');
+    objectGui.add(this, 'text');
+    objectGui.add(this, 'nineSlice');
 
     [fileGui, objectGui]
-      .forEach(gui => gui.domElement.classList.add("full-width-property"));
+      .forEach(gui => gui.domElement.classList.add('full-width-property'));
 
     [widthController, heightController]
       .forEach(controller => controller.step(10));
@@ -212,51 +198,50 @@ class Gt {
     this.nameController = nameController;
     this.widthController = widthController;
     this.heightController = heightController;
-    this.treeGui = gui.addFolder("Tree");
+    this.treeGui = gui.addFolder('Tree');
     this.handler = handler;
     this.ground = ground;
     this.gui = gui;
   }
 
-  group() {
-    const group = game.add.group();
-    group.controller = this.groupController;
-    this.add(group, "group");
+  container() {
+    const container = new PIXI.Container();
+    container.controller = this.containerController;
+    this.add(container, 'container');
   }
 
   sprite() {
-    const sprite = game.add.sprite();
+    const sprite = new PIXI.Sprite();
     sprite.controller = this.spriteController;
-    sprite.textureName = "__missing";
-    this.add(sprite, "sprite");
+    sprite.textureName = '__missing';
+    this.add(sprite, 'sprite');
   }
 
   text() {
-    const text = game.add.text(0, 0, "New Text");
+    const text = new PIXI.Text('New Text');
     text.controller = this.textController;
-    text.font = "Arial";
-    text.fill = "rgba(255,255,255,1)";
-    text.stroke = "rgba(0,0,0,1)";
+    text.font = 'Arial';
+    text.fill = 'rgba(255,255,255,1)';
+    text.stroke = 'rgba(0,0,0,1)';
     text.strokeThickness = 2;
     text.shadowBlur = 5;
-    text.shadowColor = "rgba(0,0,0,1)";
+    text.shadowColor = 'rgba(0,0,0,1)';
     text.shadowStroke = true;
     text.shadowFill = true;
-    this.add(text, "text");
+    this.add(text, 'text');
   }
 
   nineSlice() {
-    const nineSlice = new Phaser.NineSlice(game);
-    nineSlice.controller = this.nineSliceController;
-    nineSlice.textureName = "__missing";
-    this.add(nineSlice, "nineSlice");
+    // const nineSlice = new NineSlice();
+    // nineSlice.controller = this.nineSliceController;
+    // nineSlice.textureName = '__missing';
+    // this.add(nineSlice, 'nineSlice');
   }
 
   // Methods
   add(object, prefix) {
     object.name = makeUniqueName(prefix, this.hash);
-    object.class = "";
-    object.ignore = false;
+    object.class = '';
     (this.selectedObject || this.ground.tree).addChild(object);
 
     this.refreshTreeAndHash();
@@ -273,8 +258,8 @@ class Gt {
 
   refreshTreeAndHash() {
     this.gui.removeFolder(this.treeGui);
-    this.treeGui = this.gui.addFolder("Tree");
-    this.treeGui.domElement.classList.add("full-width-property");
+    this.treeGui = this.gui.addFolder('Tree');
+    this.treeGui.domElement.classList.add('full-width-property');
     this.treeGui.open();
     this.hash = {};
 
@@ -285,60 +270,39 @@ class Gt {
       object.children.forEach(child => traverse(child, `⠀${prefix}`));
     };
 
-    traverse(this.ground.tree, "");
+    traverse(this.ground.tree, '');
   }
 }
 
-const spritesheetsContext = require.context("../../cookie-crush-2/BuildSource/assets/spritesheets");
-const imagesContext = require.context("../../cookie-crush-2/BuildSource/assets/images");
-const imgContext = require.context("../../cookie-crush-2/BuildSource/assets/img");
+// const spritesheetsContext = require.context('../../BuildSource/assets/spritesheets');
+// const imagesContext = require.context('../../BuildSource/assets/images');
+// const imgContext = require.context('../../BuildSource/assets/img');
+//
+// WebFont.load({
+//   fontinactive: (familyName) => console.warn(`Cannot load ${familyName} font.`),
+//   active: () => createGame(),
+//   inactive: () => createGame(),
+//   timeout: 1000,
+//   custom: {
+//     families: fonts,
+//     urls: ['style.css'],
+//   },
+// });
 
-WebFont.load({
-  fontinactive: (familyName) => console.warn(`Cannot load ${familyName} font.`),
-  active: () => createGame(),
-  inactive: () => createGame(),
-  timeout: 1000,
-  custom: {
-    families: fonts,
-    urls: ["style.css"],
-  }
-});
+const app = new PIXI.Application();
+app.renderer.backgroundColor = 0x888888;
+document.body.appendChild(app.view);
 
-function createGame() {
-  window.game = new Phaser.Game(10, 10, Phaser.CANVAS, "", {
-    init() {
-      this.game.stage.backgroundColor = "#888888";
-      this.game.scale.scaleMode = Phaser.ScaleManager.RESIZE;
-      this.game.scale.setResizeCallback(() => {
-        this.game.scale.setMaximum();
-      });
-    },
+window.app = app;
+window.PIXI = PIXI;
 
-    preload() {
-      const loadImage = (key) => {
-        this.load.image(
-          key.split("/").pop().split(".").shift(),
-          key.slice(2),
-        );
-      };
-
-      imagesContext.keys().forEach(loadImage);
-      imgContext.keys().forEach(loadImage);
-
-      spritesheetsContext.keys().forEach((key) => {
-        if (key.endsWith(".json")) return;
-
-        this.load.atlasJSONHash(
-          key,
-          key.slice(2),
-          null,
-          spritesheetsContext(`${key.slice(0, -4)}.json`),
-        );
-      });
-    },
-
-    create() {
-      new Gt();
-    },
-  });
+function handleResize() {
+  app.renderer.resize(window.innerWidth, window.innerHeight);
+  app.view.style.width = `${window.innerWidth}px`;
+  app.view.style.height = `${window.innerHeight}px`;
 }
+
+handleResize();
+window.addEventListener('resize', handleResize);
+
+new Krot();

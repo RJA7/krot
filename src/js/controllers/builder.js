@@ -1,13 +1,13 @@
-import _ from "lodash";
+const _ = require('lodash');
 
-export const createControllerBuilder = (handler, gui) => (
-  {prop, min, max, step, list, defaults, color, round}
+const createControllerBuilder = (handler, gui) => (
+  {prop, min, max, step, list, defaults, color, round},
 ) => {
   if (handler[prop] === undefined) {
     Object.defineProperty(handler, prop, {
       set(v) {
         _.set(handler.object, prop, round ? Math.round(v) :
-          typeof v === "number" ? Math.round(v * 100) / 100 : v);
+          typeof v === 'number' ? Math.round(v * 100) / 100 : v);
       },
       get() {
         const v = _.get(handler.object, prop, defaults);
@@ -23,3 +23,5 @@ export const createControllerBuilder = (handler, gui) => (
 
   return controller;
 };
+
+module.exports = {createControllerBuilder};

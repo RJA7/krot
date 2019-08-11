@@ -1,12 +1,15 @@
-import { defaultRawUi } from "./config";
+const {defaultRawUi} = require('./config');
 
-export class Ground {
+class Ground {
   constructor() {
-    const view = game.add.group();
-    const border = game.add.graphics(0, 0, view);
+    const view = new PIXI.Container();
+    app.stage.addChild(view);
 
-    const debugGraphics = game.make.graphics();
-    view.add(debugGraphics);
+    const border = new PIXI.Graphics();
+    view.addChild(border);
+
+    const debugGraphics = new PIXI.Graphics();
+    view.addChild(debugGraphics);
 
     this.borderWidth = defaultRawUi.width;
     this.borderHeight = defaultRawUi.height;
@@ -15,23 +18,25 @@ export class Ground {
     this.tree = null;
     this.debugGraphics = debugGraphics;
 
-    game.input.onDown.add(() => {
-      const dx = view.x - game.input.x;
-      const dy = view.y - game.input.y;
+    app.stage.interactive = true;
+
+    app.stage.on('pointerdown', () => {
+      const dx = view.x - PIXI.interaction.x;
+      const dy = view.y - PIXI.interaction.y;
 
       view.update = () => {
-        view.x = game.input.x + dx;
-        view.y = game.input.y + dy;
+        view.x = PIXI.interaction.x + dx;
+        view.y = PIXI.interaction.y + dy;
         this.clampView();
       };
     });
 
-    game.input.onUp.add(() => view.update = () => "");
+    app.stage.on('pointerup', () => view.update = () => '');
 
-    game.renderer.view.addEventListener("wheel", e => {
-      const multiplier = 1 - Phaser.Math.sign(e.deltaY) * 0.04;
-      view.x = game.input.x + (view.x - game.input.x) * multiplier;
-      view.y = game.input.y + (view.y - game.input.y) * multiplier;
+    app.view.addEventListener('wheel', e => {
+      const multiplier = 1 - (e.deltaY > 0 ? 1 : -1) * 0.04;
+      view.x = PIXI.interaction.x + (view.x - PIXI.interaction.x) * multiplier;
+      view.y = PIXI.interaction.y + (view.y - PIXI.interaction.y) * multiplier;
       view.scale.x *= multiplier;
       view.scale.y *= multiplier;
       this.clampView();
@@ -39,8 +44,8 @@ export class Ground {
   }
 
   clampView() {
-    this.view.x = Phaser.Math.clamp(this.view.x, -this.borderWidth, game.width);
-    this.view.y = Phaser.Math.clamp(this.view.y, -this.borderHeight, game.height);
+    this.view.x = Math.max(-this.borderWidth, Math.min(app.screen.width, this.view.x));
+    this.view.y = Math.max(-this.borderHeight, Math.min(app.screen.height, this.view.y));
   }
 
   set width(v) {
@@ -73,7 +78,7 @@ export class Ground {
 
   setTree(tree) {
     this.tree = tree;
-    this.view.addAt(tree, 0);
+    this.view.addChildAt(tree, 0);
   }
 
   align() {
@@ -83,3 +88,5 @@ export class Ground {
     this.view.y = (window.innerHeight - this.borderHeight * sc) / 2;
   }
 }
+
+module.exports = {Ground};

@@ -1,7 +1,7 @@
-import { defaultRawUi } from "./config";
-import stringifyObject from "stringify-object";
+const stringifyObject = require('stringify-object');
+const {defaultRawUi} = require('./config');
 
-export class Handler {
+class Handler {
   constructor(setRawUi, ground) {
     this.layoutName = defaultRawUi.name;
     this.setRawUi = setRawUi;
@@ -17,11 +17,11 @@ export class Handler {
   }
 
   open() {
-    const input = document.createElement("input");
+    const input = document.createElement('input');
     document.body.appendChild(input);
-    input.setAttribute("type", "file");
+    input.setAttribute('type', 'file');
 
-    input.addEventListener("change", () => {
+    input.addEventListener('change', () => {
       document.body.removeChild(input);
 
       if (input.files.length === 0) return;
@@ -33,11 +33,11 @@ export class Handler {
         const result = reader.result;
         let rawUi = null;
 
-        eval(`rawUi ${result.slice(result.indexOf("="), result.indexOf("import {"))}`);
+        eval(`rawUi ${result.slice(result.indexOf('='), result.indexOf('import {'))}`);
         this.setRawUi(rawUi);
       };
 
-      reader.readAsText(file, "utf8");
+      reader.readAsText(file, 'utf8');
     });
 
     input.click();
@@ -57,30 +57,29 @@ export class Handler {
 
     const getClassType = (className) => {
       const namesList = classHash[className];
-      const hasGroup = namesList.find(name => hash[name].type === "Group");
-      const hasSprite = namesList.find(name => hash[name].type === "Sprite");
-      const hasText = namesList.find(name => hash[name].type === "Text");
+      const hasContainer = namesList.find(name => hash[name].type === 'Container');
+      const hasSprite = namesList.find(name => hash[name].type === 'Sprite');
+      const hasText = namesList.find(name => hash[name].type === 'Text');
 
-      return hasGroup || hasSprite && hasText ? "Group" : hasSprite ? "Sprite" : "Text";
+      return hasContainer || hasSprite && hasText ? 'Container' : hasSprite ? 'Sprite' : 'Text';
     };
 
     const fields = list.map(raw => raw.name);
     const classFields = Object.keys(classHash).filter(name => classHash[name].length !== 0);
 
     const encodedData = encodeURIComponent(
-      `/* tslint:disable */
+      `import { populate } from "krot";
+
 const rawUi = ${stringifyObject(data)};
 
-import { populate } from "lib/gt/populate";
-
 export type ${this.layoutName}Filter = Partial<{
-${[...fields, ...classFields].map(name => `  ${name}: boolean;`).join("\n")}
+${[...fields, ...classFields].map(name => `  ${name}: boolean;`).join('\n')}
 }>;
 
 export class ${this.layoutName} {
-${fields.map(name => `  public readonly ${name}: Phaser.${hash[name].type};`).join("\n")}`
-      + (classFields.length ? "\n\n" : "") +
-      `${classFields.map(name => `  public readonly ${name}: Phaser.${getClassType(name)}[];`).join("\n")}
+${fields.map(name => `  public readonly ${name}: PIXI.${hash[name].type};`).join('\n')}`
+      + (classFields.length ? '\n\n' : '') +
+      `${classFields.map(name => `  public readonly ${name}: PIXI.${getClassType(name)}[];`).join('\n')}
 
   constructor(filter?: ${this.layoutName}Filter) {
     populate(this, rawUi, filter);
@@ -88,13 +87,13 @@ ${fields.map(name => `  public readonly ${name}: Phaser.${hash[name].type};`).jo
 }
 `);
 
-    const link = document.createElement("a");
-    link.setAttribute("href", `data:text/js;charset=utf-8,${encodedData}`);
-    link.setAttribute("download", `${this.layoutName}.ts`);
+    const link = document.createElement('a');
+    link.setAttribute('href', `data:text/js;charset=utf-8,${encodedData}`);
+    link.setAttribute('download', `${this.layoutName}.ts`);
     link.click();
   }
 
-  getRawUi(writeClasses = () => "", hash = {}) {
+  getRawUi(writeClasses = () => '', hash = {}) {
     const data = {
       name: this.layoutName,
       width: this.ground.width,
@@ -117,3 +116,5 @@ ${fields.map(name => `  public readonly ${name}: Phaser.${hash[name].type};`).jo
     return data;
   }
 }
+
+module.exports = {Handler};

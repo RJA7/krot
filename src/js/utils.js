@@ -1,4 +1,4 @@
-export const makeUniqueName = (prefix, hash) => {
+const makeUniqueName = (prefix, hash) => {
   let i = 0;
   let name = `${prefix}_${i}`;
 
@@ -9,3 +9,5 @@ export const makeUniqueName = (prefix, hash) => {
 
   return name;
 };
+
+module.exports = {makeUniqueName};
