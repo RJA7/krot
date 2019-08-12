@@ -1,5 +1,4 @@
 const {DisplayController} = require('./display-controller');
-const {createControllerBuilder} = require('./builder');
 const PIXI = require('pixi.js');
 
 class SpriteController extends DisplayController {

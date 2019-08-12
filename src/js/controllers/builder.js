@@ -1,8 +1,10 @@
 const _ = require('lodash');
 
-const createControllerBuilder = (handler, gui) => (
-  {prop, min, max, step, list, defaults, color, round},
+const createControllerBuilder = (handler, gui, prefix = '') => (
+  {prop: postfix, min, max, step, list, defaults, color, round},
 ) => {
+  const prop = `${prefix}${postfix}`;
+
   if (handler[prop] === undefined) {
     Object.defineProperty(handler, prop, {
       set(v) {
@@ -17,6 +19,7 @@ const createControllerBuilder = (handler, gui) => (
   }
 
   const controller = color ? gui.addColor(handler, prop) : gui.add(handler, prop, list);
+  controller.name(postfix);
   min !== undefined && controller.min(min);
   max !== undefined && controller.max(max);
   step !== undefined && controller.step(step);

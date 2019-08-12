@@ -219,14 +219,10 @@ class Krot {
   text() {
     const text = new PIXI.Text('New Text');
     text.controller = this.textController;
-    text.font = 'Arial';
-    text.fill = 'rgba(255,255,255,1)';
-    text.stroke = 'rgba(0,0,0,1)';
-    text.strokeThickness = 2;
-    text.shadowBlur = 5;
-    text.shadowColor = 'rgba(0,0,0,1)';
-    text.shadowStroke = true;
-    text.shadowFill = true;
+    text.icons = [];
+    text.maxWidth = 0;
+    text.maxHeight = 0;
+    text.maxFontSize = 0;
     this.add(text, 'text');
   }
 

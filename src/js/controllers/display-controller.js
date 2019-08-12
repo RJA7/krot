@@ -18,7 +18,7 @@ class DisplayController extends ContainerController {
       super.getSaveObject(object),
       {
         anchor: {x: object.anchor.x, y: object.anchor.y},
-        interactive: object.interactive || false,
+        interactive: object.interactive,
       },
     );
   }
