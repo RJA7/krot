@@ -1,0 +1,22 @@
+{"frames": {
+
+"images/1":
+{
+	"frame": {"x":0,"y":0,"w":221,"h":880},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":221,"h":880},
+	"sourceSize": {"w":221,"h":880}
+}},
+"animations": {
+},
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "atlas.png",
+	"format": "RGBA8888",
+	"size": {"w":221,"h":880},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:1bc7726da67934168dd3530c9ad28875:daf7f1909a7f600e782c1d3423162d06:cbce6b53f0f49e0bf15173c25c41f876$"
+}
+}

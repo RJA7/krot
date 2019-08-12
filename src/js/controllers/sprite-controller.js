@@ -1,13 +1,24 @@
 const {DisplayController} = require('./display-controller');
 const {createControllerBuilder} = require('./builder');
+const PIXI = require('pixi.js');
 
 class SpriteController extends DisplayController {
   constructor(gui, getTreeHash, debugGraphics) {
     super(gui, getTreeHash, debugGraphics);
 
-    [
-      {prop: 'textureName', defaults: ''},
-    ].forEach(createControllerBuilder(this, this.generalFolder));
+    this.object = Object.assign(this.object, {
+      texture: {textureCacheIds: ['']},
+    });
+
+    this.generalFolder.add(this, 'texture');
+  }
+
+  set texture(v) {
+    this.object.texture = PIXI.Texture.from(v);
+  }
+
+  get texture() {
+    return this.object.texture.textureCacheIds[0];
   }
 
   getSaveObject(object) {
@@ -16,7 +27,7 @@ class SpriteController extends DisplayController {
       super.getSaveObject(object),
       {
         type: 'Sprite',
-        textureName: object.textureName,
+        texture: object.texture.textureCacheIds[0],
       },
     );
   }

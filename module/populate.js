@@ -11,6 +11,8 @@
 //   }, {});
 // };
 
+const PIXI = require('pixi.js');
+
 const containsLetter = (text) => /[A-Za-z]/.test(text);
 
 const populate = (layout, rawUi, filter = {}) => {
@@ -38,6 +40,10 @@ const populate = (layout, rawUi, filter = {}) => {
 
     text: (raw, object) => {
       object.text = containsLetter(raw.text) ? populate.localize(raw.text) : raw.text;
+    },
+
+    texture: (raw, object) => {
+      object.texture = PIXI.Texture.from(raw.texture);
     },
 
     style: (raw, object) => Object.assign(object.style, raw.style),

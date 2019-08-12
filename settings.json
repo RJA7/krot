@@ -1,7 +1,12 @@
 {
   "settings": [
     {
-      "repo": ""
+      "imagesDirs": [
+        "D:\\Projects\\ARMGames\\krot\\assets\\images"
+      ],
+      "atlasesDirs": [
+        "D:\\Projects\\ARMGames\\krot\\assets\\atlases"
+      ]
     }
   ]
 }
