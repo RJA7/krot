@@ -1,9 +1,7 @@
-// import * from "./nine-slice";
-// import "./sprite";
-// import "./text";
-
 const {populate} = require('./populate');
+const {Text} = require('./text');
 
 module.exports = {
   populate,
+  Text,
 };

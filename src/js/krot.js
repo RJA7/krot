@@ -1,16 +1,16 @@
 const {NineSliceController} = require('./controllers/nine-slice-controller');
-const {SpriteController} = require('./controllers/sprite-controller');
 const {ContainerController} = require('./controllers/container-controller');
+const {SpriteController} = require('./controllers/sprite-controller');
 const {TextController} = require('./controllers/text-controller');
-const {defaultRawUi} = require('./config');
-const {populate} = require('../../module');
-const {Handler} = require('./handler');
-const {GUI} = require('dat.gui');
-const {Ground} = require('./ground');
-const {History} = require('./history');
 const {makeUniqueName} = require('./utils');
-const WebFont = require('webfontloader'); // todo
+const {defaultRawUi} = require('./config');
+const {populate, Text} = require('../../module');
+const {Handler} = require('./handler');
+const {History} = require('./history');
+const {Ground} = require('./ground');
+const {GUI} = require('dat.gui');
 const PIXI = require('pixi.js');
+const WebFont = require('webfontloader'); // todo
 
 class Krot {
   constructor() {
@@ -217,7 +217,7 @@ class Krot {
   }
 
   text() {
-    const text = new PIXI.Text('New Text');
+    const text = new Text('New Text');
     text.controller = this.textController;
     text.icons = [];
     text.maxWidth = 0;

@@ -12,6 +12,7 @@
 // };
 
 const PIXI = require('pixi.js');
+const {Text} = require('./text');
 
 const containsLetter = (text) => /[A-Za-z]/.test(text);
 
@@ -63,7 +64,7 @@ const populate = (layout, rawUi, filter = {}) => {
     ) continue;
 
     const props = Object.keys(raw);
-    const object = new PIXI[raw.type]();
+    const object = new (raw.type === 'Text' ? Text : PIXI[raw.type])();
     layout[name] = object;
 
     for (let j = 0, jLen = props.length; j < jLen; j++) {
