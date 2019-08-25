@@ -1,3 +1,4 @@
+const {ipcRenderer} = require('electron');
 const Krot = require('./krot');
 const PIXI = require('pixi.js');
 const db = require('electron-db');
@@ -38,6 +39,13 @@ db.getRows('settings', process.cwd(), {}, (success, result) => {
   });
 
   loader.load(() => {
-    new Krot();
+    const krot = new Krot();
+
+    ['new', 'open', 'save', 'saveAs', 'undo', 'redo', 'moveDown', 'moveUp', 'clone', 'destroy', 'container', 'sprite', 'text']
+      .forEach((eventName) => {
+        ipcRenderer.on(eventName, (event, data) => {
+          krot[eventName](/*data.msg*/);
+        });
+      });
   });
 });

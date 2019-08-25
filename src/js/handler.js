@@ -1,19 +1,9 @@
 const stringifyObject = require('stringify-object');
-const {defaultRawUi} = require('./config');
 
 class Handler {
   constructor(setRawUi, ground) {
-    this.layoutName = defaultRawUi.name;
     this.setRawUi = setRawUi;
     this.ground = ground;
-  }
-
-  set name(v) {
-    this.layoutName = v;
-  }
-
-  get name() {
-    return this.layoutName;
   }
 
   open() {
@@ -68,20 +58,16 @@ class Handler {
     const classFields = Object.keys(classHash).filter(name => classHash[name].length !== 0);
 
     const encodedData = encodeURIComponent(
-      `import { populate } from "krot";
+      `import { populate } from 'krot';
 
 const rawUi = ${stringifyObject(data)};
 
-export type ${this.layoutName}Filter = Partial<{
-${[...fields, ...classFields].map(name => `  ${name}: boolean;`).join('\n')}
-}>;
-
-export class ${this.layoutName} {
-${fields.map(name => `  public readonly ${name}: PIXI.${hash[name].type};`).join('\n')}`
+export default class {
+  constructor(filter) {
+${fields.map(name => `    this.${name} = null;`).join('\n')}`
       + (classFields.length ? '\n\n' : '') +
-      `${classFields.map(name => `  public readonly ${name}: PIXI.${getClassType(name)}[];`).join('\n')}
+      `${classFields.map(name => `    this.${name} = [];`).join('\n')}
 
-  constructor(filter?: ${this.layoutName}Filter) {
     populate(this, rawUi, filter);
   }
 }
@@ -89,13 +75,12 @@ ${fields.map(name => `  public readonly ${name}: PIXI.${hash[name].type};`).join
 
     const link = document.createElement('a');
     link.setAttribute('href', `data:text/js;charset=utf-8,${encodedData}`);
-    link.setAttribute('download', `${this.layoutName}.ts`);
+    link.setAttribute('download', `Layout.js`);
     link.click();
   }
 
   getRawUi(writeClasses = () => '', hash = {}) {
     const data = {
-      name: this.layoutName,
       width: this.ground.width,
       height: this.ground.height,
       list: [],

@@ -62,6 +62,14 @@ class Krot {
     this.ground.align();
   }
 
+  save() {
+    this.handler.save();
+  }
+
+  saveAs() {
+    this.handler.save();
+  }
+
   undo() {
     const rawUi = this.history.undo();
     rawUi && this.setRawUi(rawUi);
@@ -74,13 +82,27 @@ class Krot {
 
   moveDown() {
     if (!this.selectedObject || this.selectedObject === this.ground.tree) return;
-    this.selectedObject.parent.moveDown(this.selectedObject);
+
+    const children = this.selectedObject.parent.children;
+    const index = children.indexOf(this.selectedObject);
+
+    if (index === -1 || index === 0) return;
+
+    children[index] = children[index - 1];
+    children[index - 1] = this.selectedObject;
     this.refreshTreeAndHash();
   }
 
   moveUp() {
     if (!this.selectedObject || this.selectedObject === this.ground.tree) return;
-    this.selectedObject.parent.moveUp(this.selectedObject);
+
+    const children = this.selectedObject.parent.children;
+    const index = children.indexOf(this.selectedObject);
+
+    if (index === -1 || index === children.length - 1) return;
+
+    children[index] = children[index + 1];
+    children[index + 1] = this.selectedObject;
     this.refreshTreeAndHash();
   }
 
@@ -143,11 +165,10 @@ class Krot {
 
     rawUi.list.forEach((raw) => {
       const object = layout[raw.name];
-      object.controller = this[`${raw.type.charAt(0).toLowerCase()}${raw.type.slice(1)}Controller`];
+      object.controller = this[`${raw.type.toLowerCase()}Controller`];
       object.class = raw.class;
     });
 
-    this.nameController.setValue(rawUi.name);
     this.widthController.setValue(rawUi.width);
     this.heightController.setValue(rawUi.height);
 
@@ -165,36 +186,13 @@ class Krot {
     const handler = new Handler((rawUi) => this.setRawUi(rawUi), ground);
     const gui = new GUI();
 
-    const fileGui = gui.addFolder('File');
-    fileGui.add(this, 'new');
-    fileGui.add(this, 'open');
-    fileGui.add(handler, 'save');
-
-    const editGui = gui.addFolder('Edit');
-    editGui.add(this, 'undo');
-    editGui.add(this, 'redo');
-    editGui.add(this, 'clone');
-    editGui.add(this, 'moveDown');
-    editGui.add(this, 'moveUp');
-    editGui.add(this, 'destroy');
-
     const viewGui = gui.addFolder('View');
-    const nameController = viewGui.add(handler, 'name');
     const widthController = viewGui.add(ground, 'width', 0);
     const heightController = viewGui.add(ground, 'height', 0);
-
-    const objectGui = gui.addFolder('Object');
-    objectGui.add(this, 'container');
-    objectGui.add(this, 'sprite');
-    objectGui.add(this, 'text');
-
-    [fileGui, objectGui]
-      .forEach(gui => gui.domElement.classList.add('full-width-property'));
 
     [widthController, heightController]
       .forEach(controller => controller.step(10));
 
-    this.nameController = nameController;
     this.widthController = widthController;
     this.heightController = heightController;
     this.treeGui = gui.addFolder('Tree');
