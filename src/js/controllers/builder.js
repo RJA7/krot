@@ -9,7 +9,7 @@ const createControllerBuilder = (handler, gui, prefix = '') => (
     Object.defineProperty(handler, prop, {
       set(v) {
         _.set(handler.object, prop, round ? Math.round(v) :
-          typeof v === 'number' ? Math.round(v * 100) / 100 : v);
+          typeof v === 'number' ? Math.round(v * 1000) / 1000 : v);
       },
       get() {
         const v = _.get(handler.object, prop, defaults);
