@@ -1,16 +1,17 @@
-const {NineSliceController} = require('./controllers/nine-slice-controller');
 const {ContainerController} = require('./controllers/container-controller');
 const {SpriteController} = require('./controllers/sprite-controller');
 const {TextController} = require('./controllers/text-controller');
 const {makeUniqueName} = require('./utils');
 const {defaultRawUi} = require('./config');
-const {populate, Text} = require('../../module');
+const {populate, init} = require('../../module');
 const {Handler} = require('./handler');
 const {History} = require('./history');
 const {Ground} = require('./ground');
 const {GUI} = require('dat.gui');
 const PIXI = require('pixi.js');
 const WebFont = require('webfontloader'); // todo
+
+init(PIXI);
 
 class Krot {
   constructor() {
@@ -19,8 +20,7 @@ class Krot {
     this.spriteController = new SpriteController(...getParams());
     this.containerController = new ContainerController(...getParams());
     this.textController = new TextController(...getParams());
-    this.nineSliceController = new NineSliceController(...getParams());
-    this.controllers = [this.containerController, this.spriteController, this.textController, this.nineSliceController];
+    this.controllers = [this.containerController, this.spriteController, this.textController];
     this.history = new History();
     this.selectedObject = null;
     this.hash = {};
@@ -187,7 +187,6 @@ class Krot {
     objectGui.add(this, 'container');
     objectGui.add(this, 'sprite');
     objectGui.add(this, 'text');
-    objectGui.add(this, 'nineSlice');
 
     [fileGui, objectGui]
       .forEach(gui => gui.domElement.classList.add('full-width-property'));
@@ -217,19 +216,9 @@ class Krot {
   }
 
   text() {
-    const text = new Text('New Text');
+    const text = new PIXI.Text('New Text');
     text.controller = this.textController;
-    text.icons = [];
-    text.maxWidth = 0;
-    text.maxHeight = 0;
-    text.maxFontSize = 0;
     this.add(text, 'text');
-  }
-
-  nineSlice() {
-    // const nineSlice = new NineSlice();
-    // nineSlice.controller = this.nineSliceController;
-    // this.add(nineSlice, 'nineSlice');
   }
 
   // Methods

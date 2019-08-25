@@ -1,5 +1,3 @@
-const {TextIcon} = require('../../../module');
-const {TextIconsController} = require('./text-icons-controller');
 const {DisplayController} = require('./display-controller');
 const {createControllerBuilder} = require('./builder');
 const PIXI = require('pixi.js');
@@ -14,23 +12,15 @@ class TextController extends DisplayController {
   constructor(gui, getTreeHash, debugGraphics) {
     super(gui, getTreeHash, debugGraphics);
 
-    this.textFolder = gui.addFolder('Text');
-    this.iconsFolder = null;
     this.styleFolder = gui.addFolder('Style');
-    this.folders.push(this.textFolder, this.styleFolder);
+    this.folders.push(this.styleFolder);
     this.object.text = '';
-    this.object.icons = [];
-
-    this.iconsController = new TextIconsController(() => this.refreshIconsFolder());
 
     this.object.style = new PIXI.TextStyle();
 
     [
       {prop: 'text', defaults: ''},
-      {prop: 'maxWidth', min: 0, step: 1, defaults: 0, round: true},
-      {prop: 'maxHeight', min: 0, step: 1, defaults: 0, round: true},
-      {prop: 'maxFontSize', min: 0, step: 1, defaults: 0, round: true},
-    ].forEach(createControllerBuilder(this, this.textFolder));
+    ].forEach(createControllerBuilder(this, this.generalFolder));
 
     [
       {prop: 'align', defaults: 'left', list: ['left', 'center', 'right']},
@@ -66,45 +56,6 @@ class TextController extends DisplayController {
   setObject(object) {
     super.setObject(object);
     this.styleFolder.updateDisplay();
-    this.textFolder.updateDisplay();
-    this.refreshIconsFolder();
-  }
-
-  hide() {
-    super.hide();
-    this.iconsController.hide();
-  }
-
-  refreshIconsFolder() {
-    // this.iconsFolder && this.generalFolder.removeFolder(this.iconsFolder);
-    // this.iconsFolder = this.generalFolder.addFolder('Icons');
-    // this.iconsFolder.open();
-    //
-    // const addNewKey = '+ Add New Icon +';
-    //
-    // this.iconsFolder.add({
-    //   [addNewKey]: () => {
-    //     let i = 0;
-    //     let iconKey = `icon_${i}`;
-    //
-    //     while (this.object.icons[iconKey]) {
-    //       iconKey = `icon_${++i}`;
-    //     }
-    //
-    //     this.object.icons[iconKey] = new TextIcon('__missing');
-    //
-    //     this.refreshIconsFolder();
-    //     this.iconsController.setObject(this.object, iconKey);
-    //   },
-    // }, addNewKey);
-    //
-    // Object.keys(this.object.icons).forEach(key => {
-    //   this.iconsFolder.add({
-    //     [key]: () => {
-    //       this.iconsController.setObject(this.object, key);
-    //     },
-    //   }, key);
-    // });
   }
 
   set text(v) {
@@ -122,10 +73,6 @@ class TextController extends DisplayController {
       {
         type: 'Text',
         text: object.text,
-        maxWidth: object.maxWidth,
-        maxHeight: object.maxHeight,
-        maxFontSize: object.maxFontSize,
-        icons: object.icons,
 
         style: {
           align: object.style.align,
@@ -172,28 +119,6 @@ class TextController extends DisplayController {
     {
       const localLT = new PIXI.Point(-object.anchor.x * object.canvas.width, -object.anchor.y * object.canvas.height);
       const localRB = new PIXI.Point((1 - object.anchor.x) * object.canvas.width, (1 - object.anchor.y) * object.canvas.height);
-      const lt = this.debugGraphics.toLocal(new PIXI.Point(localLT.x, localLT.y), object);
-      const rt = this.debugGraphics.toLocal(new PIXI.Point(localRB.x, localLT.y), object);
-      const rb = this.debugGraphics.toLocal(new PIXI.Point(localRB.x, localRB.y), object);
-      const lb = this.debugGraphics.toLocal(new PIXI.Point(localLT.x, localRB.y), object);
-
-      [
-        [3, 0x000000, 1],
-        [1, 0xffffff, 1],
-      ].forEach(style => {
-        this.debugGraphics.lineStyle(...style);
-        this.debugGraphics.moveTo(lt.x, lt.y);
-        this.debugGraphics.lineTo(rt.x, rt.y);
-        this.debugGraphics.lineTo(rb.x, rb.y);
-        this.debugGraphics.lineTo(lb.x, lb.y);
-        this.debugGraphics.lineTo(lt.x, lt.y);
-      });
-    }
-
-    // Max width, height
-    {
-      const localLT = new PIXI.Point(-object.anchor.x * object.maxWidth, -object.anchor.y * object.maxHeight);
-      const localRB = new PIXI.Point((1 - object.anchor.x) * object.maxWidth, (1 - object.anchor.y) * object.maxHeight);
       const lt = this.debugGraphics.toLocal(new PIXI.Point(localLT.x, localLT.y), object);
       const rt = this.debugGraphics.toLocal(new PIXI.Point(localRB.x, localLT.y), object);
       const rb = this.debugGraphics.toLocal(new PIXI.Point(localRB.x, localRB.y), object);
