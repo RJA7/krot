@@ -16,31 +16,33 @@ class Ground {
     this.border = border;
     this.view = view;
     this.tree = null;
+    this.drag = {dx: 0, dy: 0};
     this.debugGraphics = debugGraphics;
 
-    app.stage.interactive = true;
-
-    app.stage.on('pointerdown', () => {
-      const dx = view.x - PIXI.interaction.x;
-      const dy = view.y - PIXI.interaction.y;
-
-      view.update = () => {
-        view.x = PIXI.interaction.x + dx;
-        view.y = PIXI.interaction.y + dy;
-        this.clampView();
-      };
+    app.renderer.plugins.interaction.on('mousedown', (e) => {
+      this.drag.dx = view.x - e.data.global.x;
+      this.drag.dy = view.y - e.data.global.y;
+      app.ticker.add(this.dragUpdate, this);
     });
 
-    app.stage.on('pointerup', () => view.update = () => '');
+    app.renderer.plugins.interaction.on('mouseup', () => app.ticker.remove(this.dragUpdate, this));
 
     app.view.addEventListener('wheel', e => {
-      const multiplier = 1 - (e.deltaY > 0 ? 1 : -1) * 0.04;
-      view.x = PIXI.interaction.x + (view.x - PIXI.interaction.x) * multiplier;
-      view.y = PIXI.interaction.y + (view.y - PIXI.interaction.y) * multiplier;
+      const multiplier = 1 - (e.wheelDeltaY > 0 ? -1 : 1) * 0.04;
+      const x = app.renderer.plugins.interaction.mouse.global.x;
+      const y = app.renderer.plugins.interaction.mouse.global.y;
+      view.x = x + (view.x - x) * multiplier;
+      view.y = y + (view.y - y) * multiplier;
       view.scale.x *= multiplier;
       view.scale.y *= multiplier;
       this.clampView();
     });
+  }
+
+  dragUpdate() {
+    this.view.x = app.renderer.plugins.interaction.mouse.global.x + this.drag.dx;
+    this.view.y = app.renderer.plugins.interaction.mouse.global.y + this.drag.dy;
+    this.clampView();
   }
 
   clampView() {
