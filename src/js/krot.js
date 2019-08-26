@@ -9,7 +9,6 @@ const {History} = require('./history');
 const {Ground} = require('./ground');
 const {GUI} = require('dat.gui');
 const PIXI = require('pixi.js');
-const WebFont = require('webfontloader'); // todo
 
 init(PIXI);
 
@@ -254,20 +253,5 @@ class Krot {
     traverse(this.ground.tree, '');
   }
 }
-
-// const spritesheetsContext = require.context('../../BuildSource/assets/spritesheets');
-// const imagesContext = require.context('../../BuildSource/assets/images');
-// const imgContext = require.context('../../BuildSource/assets/img');
-//
-// WebFont.load({
-//   fontinactive: (familyName) => console.warn(`Cannot load ${familyName} font.`),
-//   active: () => createGame(),
-//   inactive: () => createGame(),
-//   timeout: 1000,
-//   custom: {
-//     families: fonts,
-//     urls: ['style.css'],
-//   },
-// });
 
 module.exports = Krot;

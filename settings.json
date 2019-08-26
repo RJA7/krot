@@ -6,6 +6,15 @@
       ],
       "atlasesDirs": [
         "D:\\Projects\\ARMGames\\krot\\assets\\atlases"
+      ],
+      "fontsDirs": [
+        "D:\\Projects\\ARMGames\\krot\\assets\\fonts"
+      ],
+      "googleFonts": [
+        "Anton"
+      ],
+      "standardFonts": [
+        "Arial"
       ]
     }
   ]

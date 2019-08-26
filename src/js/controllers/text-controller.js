@@ -1,5 +1,6 @@
 const {DisplayController} = require('./display-controller');
 const {createControllerBuilder} = require('./builder');
+const {fonts} = require('../config');
 const PIXI = require('pixi.js');
 
 const fontWeights = [
@@ -32,7 +33,7 @@ class TextController extends DisplayController {
       {prop: 'dropShadowColor', defaults: 'black'},
       {prop: 'dropShadowDistance', defaults: 5, round: true},
       {prop: 'fill', defaults: 'black'},
-      {prop: 'fontFamily', defaults: 'Arial'},
+      {prop: 'fontFamily', defaults: 'Arial', list: fonts},
       {prop: 'fontSize', defaults: 26, round: true},
       {prop: 'fontStyle', defaults: 'normal', list: ['normal', 'italic', 'oblique']},
       {prop: 'fontVariant', defaults: 'normal', list: ['normal', 'small-caps']},

@@ -11,4 +11,6 @@ const defaultRawUi = {
   ],
 };
 
-module.exports = {defaultRawUi};
+const fonts = [];
+
+module.exports = {defaultRawUi, fonts};
