@@ -41,6 +41,13 @@ class Krot {
     this.ground.align();
     this.handler.new();
     this.history.put(this.handler.getRawUi());
+
+    window.onbeforeunload = (e) => {
+      if (this.handler.isChanged() && confirm('Save current file?')) {
+        e.returnValue = false;
+        return this.handler.save();
+      }
+    };
   }
 
   new() {

@@ -20,7 +20,7 @@ class Handler {
   }
 
   open(cb) {
-    remote.dialog.showOpenDialog({filters: [{extensions: ['js'], name: ''}]}, (filePaths) => {
+    remote.dialog.showOpenDialog(remote.getCurrentWindow(),{filters: [{extensions: ['js'], name: ''}]}, (filePaths) => {
       if (!filePaths.length) return;
 
       const file = fs.readFileSync(filePaths[0], 'utf8');
@@ -71,12 +71,12 @@ ${fields.map(name => `    this.${name} = null;`).join('\n')}`
 
     fs.writeFile(this.filePath, file, () => {
       this.savedJson = JSON.stringify(data);
-      cb();
+      cb && cb();
     });
   }
 
   saveAs(cb) {
-    remote.dialog.showSaveDialog({filters: [{extensions: ['js'], name: ''}]}, (filePath) => {
+    remote.dialog.showSaveDialog(remote.getCurrentWindow(),{filters: [{extensions: ['js'], name: ''}]}, (filePath) => {
       if (!filePath) return;
       this.filePath = filePath;
       this.save(cb);
