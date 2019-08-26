@@ -15,7 +15,7 @@ init(PIXI);
 class Krot {
   constructor() {
     this.createGui();
-    const getParams = () => [new GUI({width: 300}), () => this.getHash(), this.ground.debugGraphics];
+    const getParams = () => [new GUI({width: 400}), () => this.getHash(), this.ground.debugGraphics];
     this.spriteController = new SpriteController(...getParams());
     this.containerController = new ContainerController(...getParams());
     this.textController = new TextController(...getParams());
@@ -24,8 +24,8 @@ class Krot {
     this.selectedObject = null;
     this.hash = {};
 
-    window.addEventListener('blur', () => this.history.save());
-    window.addEventListener('beforeunload', () => this.history.save());
+    // window.addEventListener('blur', () => this.history.save());
+    // window.addEventListener('beforeunload', () => this.history.save());
     window.addEventListener('blur', () => this.history.putIfChanged(this.handler.getRawUi()), true);
 
     window.addEventListener('click', (e) => {
@@ -37,28 +37,38 @@ class Krot {
     }, true);
 
     this.controllers.forEach(c => c.onTreeChange.add(() => this.refreshTreeAndHash()));
-    this.setRawUi(this.history.getItem());
+    this.setRawUi();
     this.ground.align();
+    this.handler.new();
+    this.history.put(this.handler.getRawUi());
   }
 
   new() {
-    if (confirm('Save current file?')) {
-      return this.handler.save();
+    const cb = () => {
+      this.setRawUi();
+      this.handler.new();
+      this.ground.align();
+      this.history.clear();
+      this.history.put(this.handler.getRawUi());
+    };
+
+    if (this.handler.isChanged() && confirm('Save current file?')) {
+      return this.handler.save(cb);
     }
 
-    this.history.clear();
-    this.setRawUi();
-    this.ground.align();
+    cb();
   }
 
   open() {
-    if (confirm('Save current file?')) {
+    if (this.handler.isChanged() && confirm('Save current file?')) {
       return this.handler.save();
     }
 
-    this.history.clear();
-    this.handler.open();
-    this.ground.align();
+    this.handler.open(() => {
+      this.ground.align();
+      this.history.clear();
+      this.history.put(this.handler.getRawUi());
+    });
   }
 
   save() {
@@ -66,7 +76,7 @@ class Krot {
   }
 
   saveAs() {
-    this.handler.save();
+    this.handler.saveAs();
   }
 
   undo() {

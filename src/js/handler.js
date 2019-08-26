@@ -1,39 +1,47 @@
 const stringifyObject = require('stringify-object');
+const {remote} = require('electron');
+const fs = require('fs');
 
 class Handler {
   constructor(setRawUi, ground) {
     this.setRawUi = setRawUi;
     this.ground = ground;
+    this.filePath = '';
+    this.savedJson = '';
   }
 
-  open() {
-    const input = document.createElement('input');
-    document.body.appendChild(input);
-    input.setAttribute('type', 'file');
+  new() {
+    this.filePath = '';
+    this.savedJson = JSON.stringify(this.getRawUi());
+  }
 
-    input.addEventListener('change', () => {
-      document.body.removeChild(input);
+  isChanged() {
+    return this.savedJson !== JSON.stringify(this.getRawUi());
+  }
 
-      if (input.files.length === 0) return;
+  open(cb) {
+    remote.dialog.showOpenDialog({filters: [{extensions: ['js'], name: ''}]}, (filePaths) => {
+      if (!filePaths.length) return;
 
-      const file = input.files[0];
-      const reader = new FileReader();
+      const file = fs.readFileSync(filePaths[0], 'utf8');
+      let rawUi = null;
 
-      reader.onload = () => {
-        const result = reader.result;
-        let rawUi = null;
-
-        eval(`rawUi ${result.slice(result.indexOf('='), result.indexOf('import {'))}`);
+      try {
+        eval(`rawUi = ${file.split('const rawUi = ')[1].split('export default class {')[0]}`);
         this.setRawUi(rawUi);
-      };
-
-      reader.readAsText(file, 'utf8');
+        this.filePath = filePaths[0];
+        cb();
+      } catch (e) {
+        // noop
+      }
     });
-
-    input.click();
   }
 
-  save() {
+  save(cb) {
+    if (!this.filePath) {
+      return this.saveAs(cb);
+    }
+
     const classHash = {};
     const hash = {};
 
@@ -43,22 +51,10 @@ class Handler {
     });
 
     const data = this.getRawUi(writeClasses, hash);
-    const list = data.list;
-
-    const getClassType = (className) => {
-      const namesList = classHash[className];
-      const hasContainer = namesList.find(name => hash[name].type === 'Container');
-      const hasSprite = namesList.find(name => hash[name].type === 'Sprite');
-      const hasText = namesList.find(name => hash[name].type === 'Text');
-
-      return hasContainer || hasSprite && hasText ? 'Container' : hasSprite ? 'Sprite' : 'Text';
-    };
-
-    const fields = list.map(raw => raw.name);
+    const fields = data.list.map(raw => raw.name);
     const classFields = Object.keys(classHash).filter(name => classHash[name].length !== 0);
 
-    const encodedData = encodeURIComponent(
-      `import { populate } from 'krot';
+    const file = `import { populate } from 'krot';
 
 const rawUi = ${stringifyObject(data)};
 
@@ -71,12 +67,20 @@ ${fields.map(name => `    this.${name} = null;`).join('\n')}`
     populate(this, rawUi, filter);
   }
 }
-`);
+`;
 
-    const link = document.createElement('a');
-    link.setAttribute('href', `data:text/js;charset=utf-8,${encodedData}`);
-    link.setAttribute('download', `Layout.js`);
-    link.click();
+    fs.writeFile(this.filePath, file, () => {
+      this.savedJson = JSON.stringify(data);
+      cb();
+    });
+  }
+
+  saveAs(cb) {
+    remote.dialog.showSaveDialog({filters: [{extensions: ['js'], name: ''}]}, (filePath) => {
+      if (!filePath) return;
+      this.filePath = filePath;
+      this.save(cb);
+    });
   }
 
   getRawUi(writeClasses = () => '', hash = {}) {
