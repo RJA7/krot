@@ -202,7 +202,6 @@ class Krot {
     const gui = new GUI();
 
     const viewGui = gui.addFolder("View");
-    const nameController = viewGui.add(handler, "name");
     const widthController = viewGui.add(ground, "width", 0);
     const heightController = viewGui.add(ground, "height", 0);
 

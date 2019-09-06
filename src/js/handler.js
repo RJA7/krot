@@ -1,23 +1,16 @@
 const stringifyObject = require("stringify-object");
 const {remote} = require("electron");
-const {defaultRawUi} = require("./config");
+const path = require("path");
 const fs = require("fs");
+
+const token = "/* raw */";
 
 class Handler {
   constructor(setRawUi, ground) {
-    this.layoutName = defaultRawUi.name;
     this.setRawUi = setRawUi;
     this.ground = ground;
     this.filePath = "";
     this.savedJson = "";
-  }
-
-  get name() {
-    return this.layoutName;
-  }
-
-  set name(v) {
-    this.layoutName = v;
   }
 
   new() {
@@ -32,7 +25,7 @@ class Handler {
   open(cb) {
     remote.dialog.showOpenDialog(remote.getCurrentWindow(), {
       filters: [{
-        extensions: ["js"],
+        extensions: ["js", "ts"],
         name: "",
       }],
     }, (filePaths) => {
@@ -42,7 +35,7 @@ class Handler {
       let rawUi = null;
 
       try {
-        eval(`rawUi = ${file.split("const rawUi = ")[1].split("export default class {")[0]}`);
+        eval(`rawUi = ${file.split(token)[1]}`);
         this.setRawUi(rawUi);
         this.filePath = filePaths[0];
         cb();
@@ -68,21 +61,49 @@ class Handler {
     const data = this.getRawUi(writeClasses, hash);
     const fields = data.list.map(raw => raw.name);
     const classFields = Object.keys(classHash).filter(name => classHash[name].length !== 0);
+    const fileName = this.filePath.split(path.sep).pop();
+    const [layoutName, extension] = fileName.split(".");
+    let file;
 
-    const file = `import { populate } from 'krot';
+    if (extension === "js") {
 
-const rawUi = ${stringifyObject(data)};
+      file = `import { populate } from "krot-phaser";
 
-export default class {
+const rawUi = ${token}${stringifyObject(data)};${token}
+
+export class ${layoutName} {
   constructor(filter) {
 ${fields.map(name => `    this.${name} = null;`).join("\n")}`
-      + (classFields.length ? "\n\n" : "") +
-      `${classFields.map(name => `    this.${name} = [];`).join("\n")}
+        + (classFields.length ? "\n\n" : "") +
+        `${classFields.map(name => `    this.${name} = [];`).join("\n")}
 
     populate(this, rawUi, filter);
   }
 }
 `;
+
+    } else {
+
+      file = `import { populate } from "krot-phaser";
+
+const rawUi = ${token}${stringifyObject(data)};${token}
+
+export type ${layoutName}Filter = Partial<{
+${[...fields, ...classFields].map(name => `  ${name}: boolean;`).join("\n")}
+}>;
+
+export class ${layoutName} {
+${fields.map(name => `  public readonly ${name}: Phaser.${hash[name].type};`).join("\n")}`
+        + (classFields.length ? "\n\n" : "") +
+        `${classFields.map(name => `  public readonly ${name}: Phaser.${getClassType(name)}[];`).join("\n")}
+
+  constructor(filter?: ${layoutName}Filter) {
+    populate(this, rawUi, filter);
+  }
+}
+`;
+
+    }
 
     fs.writeFile(this.filePath, file, () => {
       this.savedJson = JSON.stringify(data);
@@ -92,10 +113,16 @@ ${fields.map(name => `    this.${name} = null;`).join("\n")}`
 
   saveAs(cb) {
     remote.dialog.showSaveDialog(remote.getCurrentWindow(), {
-      filters: [{
-        extensions: ["js"],
-        name: "",
-      }],
+      filters: [
+        {
+          extensions: ["js"],
+          name: "",
+        },
+        {
+          extensions: ["ts"],
+          name: "",
+        },
+      ],
     }, (filePath) => {
       if (!filePath) return;
       this.filePath = filePath;
