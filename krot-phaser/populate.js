@@ -39,7 +39,7 @@ const populate = (layout, rawUi, filter = {}) => {
     ignore: () => void 0,
 
     text: (raw, object) => {
-      object.setText(containsLetter(raw.text) ? G.txt(raw.text) : raw.text);
+      object.setText(containsLetter(raw.text) ? populate.localize(raw.text) : raw.text);
     },
   };
 
@@ -81,5 +81,7 @@ const populate = (layout, rawUi, filter = {}) => {
     }
   }
 };
+
+populate.localize = (text) => text;
 
 module.exports = {populate};

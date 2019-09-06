@@ -86,6 +86,7 @@ ${fields.map(name => `    this.${name} = null;`).join("\n")}`
 
       file = `import { populate } from "krot-phaser";
 
+/* tslint:disable */
 const rawUi = ${token}${stringifyObject(data)};${token}
 
 export type ${layoutName}Filter = Partial<{

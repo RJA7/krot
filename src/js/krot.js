@@ -173,6 +173,7 @@ class Krot {
   setRawUi(rawUi = defaultRawUi) {
     const layout = {};
 
+    rawUi.list.forEach(raw => raw.ignore = false); // deprecated flag
     populate(layout, rawUi);
 
     this.ground.clean();
@@ -180,7 +181,7 @@ class Krot {
 
     rawUi.list.forEach((raw) => {
       const object = layout[raw.name];
-      object.controller = this[`${raw.type.toLowerCase()}Controller`];
+      object.controller = this[`${raw.type.charAt(0).toLowerCase()}${raw.type.slice(1)}Controller`];
       object.class = raw.class;
     });
 

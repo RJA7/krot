@@ -11,7 +11,6 @@ class Ground {
     this.border = border;
     this.view = view;
     this.tree = null;
-    this.drag = {dx: 0, dy: 0};
     this.debugGraphics = debugGraphics;
 
     game.input.onDown.add(() => {
