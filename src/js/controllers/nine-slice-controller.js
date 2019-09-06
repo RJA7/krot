@@ -1,4 +1,4 @@
-const {getImageByTextureName} = require("../../../krot-phaser");
+const {getImageByTextureName} = require("krot-phaser");
 const {DisplayController} = require("./display-controller");
 const {createControllerBuilder} = require("./builder");
 

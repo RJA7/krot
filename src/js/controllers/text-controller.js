@@ -1,7 +1,7 @@
 const {TextIconsController} = require("./text-icons-controller");
 const {DisplayController} = require("./display-controller");
 const {createControllerBuilder} = require("./builder");
-const {TextIcon} = require("../../../krot-phaser");
+const {TextIcon} = require("krot-phaser");
 const {fonts} = require("../config");
 
 class TextController extends DisplayController {

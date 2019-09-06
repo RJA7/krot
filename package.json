@@ -15,7 +15,8 @@
     "electron-db": "^0.15.2",
     "lodash": "^4.17.11",
     "stringify-object": "^3.3.0",
-    "webfontloader": "^1.6.28"
+    "webfontloader": "^1.6.28",
+    "krot-phaser": "^1.0.0"
   },
   "devDependencies": {
     "electron": "^1.8.2",

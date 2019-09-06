@@ -1,4 +1,4 @@
-const {TextIcon} = require("../../../krot-phaser/text-icon");
+const {TextIcon} = require("krot-phaser");
 const {GUI} = require("dat.gui");
 
 class TextIconsController {
