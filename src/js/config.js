@@ -4,7 +4,7 @@ const defaultRawUi = {
   height: 960,
   list: [
     {
-      type: 'Container',
+      type: "Group",
       name: 'root',
       class: '',
     },

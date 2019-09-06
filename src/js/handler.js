@@ -1,17 +1,27 @@
-const stringifyObject = require('stringify-object');
-const {remote} = require('electron');
-const fs = require('fs');
+const stringifyObject = require("stringify-object");
+const {remote} = require("electron");
+const {defaultRawUi} = require("./config");
+const fs = require("fs");
 
 class Handler {
   constructor(setRawUi, ground) {
+    this.layoutName = defaultRawUi.name;
     this.setRawUi = setRawUi;
     this.ground = ground;
-    this.filePath = '';
-    this.savedJson = '';
+    this.filePath = "";
+    this.savedJson = "";
+  }
+
+  get name() {
+    return this.layoutName;
+  }
+
+  set name(v) {
+    this.layoutName = v;
   }
 
   new() {
-    this.filePath = '';
+    this.filePath = "";
     this.savedJson = JSON.stringify(this.getRawUi());
   }
 
@@ -20,14 +30,19 @@ class Handler {
   }
 
   open(cb) {
-    remote.dialog.showOpenDialog(remote.getCurrentWindow(),{filters: [{extensions: ['js'], name: ''}]}, (filePaths) => {
+    remote.dialog.showOpenDialog(remote.getCurrentWindow(), {
+      filters: [{
+        extensions: ["js"],
+        name: "",
+      }],
+    }, (filePaths) => {
       if (!filePaths.length) return;
 
-      const file = fs.readFileSync(filePaths[0], 'utf8');
+      const file = fs.readFileSync(filePaths[0], "utf8");
       let rawUi = null;
 
       try {
-        eval(`rawUi = ${file.split('const rawUi = ')[1].split('export default class {')[0]}`);
+        eval(`rawUi = ${file.split("const rawUi = ")[1].split("export default class {")[0]}`);
         this.setRawUi(rawUi);
         this.filePath = filePaths[0];
         cb();
@@ -60,9 +75,9 @@ const rawUi = ${stringifyObject(data)};
 
 export default class {
   constructor(filter) {
-${fields.map(name => `    this.${name} = null;`).join('\n')}`
-      + (classFields.length ? '\n\n' : '') +
-      `${classFields.map(name => `    this.${name} = [];`).join('\n')}
+${fields.map(name => `    this.${name} = null;`).join("\n")}`
+      + (classFields.length ? "\n\n" : "") +
+      `${classFields.map(name => `    this.${name} = [];`).join("\n")}
 
     populate(this, rawUi, filter);
   }
@@ -76,14 +91,19 @@ ${fields.map(name => `    this.${name} = null;`).join('\n')}`
   }
 
   saveAs(cb) {
-    remote.dialog.showSaveDialog(remote.getCurrentWindow(),{filters: [{extensions: ['js'], name: ''}]}, (filePath) => {
+    remote.dialog.showSaveDialog(remote.getCurrentWindow(), {
+      filters: [{
+        extensions: ["js"],
+        name: "",
+      }],
+    }, (filePath) => {
       if (!filePath) return;
       this.filePath = filePath;
       this.save(cb);
     });
   }
 
-  getRawUi(writeClasses = () => '', hash = {}) {
+  getRawUi(writeClasses = () => "", hash = {}) {
     const data = {
       width: this.ground.width,
       height: this.ground.height,

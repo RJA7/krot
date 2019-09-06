@@ -1,81 +1,83 @@
-const {ipcRenderer} = require('electron');
-const WebFont = require('webfontloader');
-const {fonts} = require('./config');
-const Krot = require('./krot');
-const PIXI = require('pixi.js');
-const db = require('electron-db');
-const path = require('path');
-const fs = require('fs');
+const {ipcRenderer} = require("electron");
+const WebFont = require("webfontloader");
+const {fonts} = require("./config");
+const Krot = require("./krot");
+const db = require("electron-db");
+const path = require("path");
+const fs = require("fs");
 
-const app = new PIXI.Application();
-app.renderer.backgroundColor = 0x888888;
-document.body.appendChild(app.view);
 
-window.app = app;
-window.PIXI = PIXI;
+class State extends Phaser.State {
+  init() {
+    game.stage.backgroundColor = "#888888";
+    game.scale.scaleMode = Phaser.ScaleManager.RESIZE;
+    game.scale.setResizeCallback(() => game.scale.setMaximum());
+  }
 
-function handleResize() {
-  app.renderer.resize(window.innerWidth, window.innerHeight);
-  app.view.style.width = `${window.innerWidth}px`;
-  app.view.style.height = `${window.innerHeight}px`;
-}
+  preload() {
+    db.getRows("settings", process.cwd(), {}, this.loadAssets.bind(this));
+  }
 
-handleResize();
-window.addEventListener('resize', handleResize);
+  async loadAssets(success, result) {
+    const promises = [];
+    const settings = result[0];
 
-db.getRows('settings', process.cwd(), {}, async (success, result) => {
-  const promises = [];
-  const settings = result[0];
-  const loader = PIXI.Loader.shared;
-
-  settings.imagesDirs.forEach((dir) => {
-    fs.readdirSync(dir).forEach((fileName) => {
-      loader.add(fileName.split('.').shift(), `${dir}${path.sep}${fileName}`);
-    });
-  });
-
-  settings.atlasesDirs.forEach((dir) => {
-    fs.readdirSync(dir).forEach((fileName) => {
-      if (!fileName.endsWith('.json')) return;
-      loader.add(fileName.split('.').shift(), `${dir}${path.sep}${fileName}`);
-    });
-  });
-
-  settings.fontsDirs.forEach((dir) => {
-    fs.readdirSync(dir).forEach((fileName) => {
-      const [name] = fileName.split('.');
-      const fontFace = new FontFace(name, `url(${dir}${path.sep}${fileName})`.replace(/\\/g, '/'));
-
-      promises.push(
-        fontFace.load().then((loadedFace) => {
-          document.fonts.add(loadedFace);
-          fonts.push(name);
-        }),
-      );
-    });
-  });
-
-  promises.push(new Promise(resolve => {
-    WebFont.load({
-      active: resolve,
-      inactive: resolve,
-      google: {
-        families: settings.googleFonts,
-      },
-    });
-  }));
-
-  fonts.push(...settings.standardFonts, ...settings.googleFonts);
-  promises.push(new Promise(resolve => loader.load(resolve)));
-
-  await Promise.all(promises);
-
-  const krot = new Krot();
-
-  ['new', 'open', 'save', 'saveAs', 'undo', 'redo', 'moveDown', 'moveUp', 'clone', 'destroy', 'container', 'sprite', 'text']
-    .forEach((eventName) => {
-      ipcRenderer.on(eventName, (event, data) => {
-        krot[eventName](/*data.msg*/);
+    settings.imagesDirs.forEach((dir) => {
+      fs.readdirSync(dir).forEach((fileName) => {
+        game.load.image(fileName.split(".").shift(), `${dir}${path.sep}${fileName}`);
       });
     });
-});
+
+    settings.atlasesDirs.forEach((dir) => {
+      fs.readdirSync(dir).forEach((fileName) => {
+        if (fileName.endsWith(".json")) return;
+        const name = fileName.split(".").shift();
+        game.load.atlas(name, `${dir}${path.sep}${fileName}`, `${dir}${path.sep}${name}.json`, Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
+      });
+    });
+
+    settings.fontsDirs.forEach((dir) => {
+      fs.readdirSync(dir).forEach((fileName) => {
+        const [name] = fileName.split(".");
+        const fontFace = new FontFace(name, `url(${dir}${path.sep}${fileName})`.replace(/\\/g, "/"));
+
+        promises.push(
+          fontFace.load().then((loadedFace) => {
+            document.fonts.add(loadedFace);
+            fonts.push(name);
+          }),
+        );
+      });
+    });
+
+    settings.googleFonts.length && promises.push(new Promise(resolve => {
+      WebFont.load({
+        active: resolve,
+        inactive: resolve,
+        google: {
+          families: settings.googleFonts,
+        },
+      });
+    }));
+
+    fonts.push(...settings.standardFonts, ...settings.googleFonts);
+    promises.push(new Promise(resolve => game.load.onLoadComplete.add(resolve)));
+
+    game.load.start();
+
+    await Promise.all(promises);
+  }
+
+  create() {
+    const krot = new Krot();
+
+    ["new", "open", "save", "saveAs", "undo", "redo", "moveDown", "moveUp", "clone", "destroy", "group", "sprite", "text"]
+      .forEach((eventName) => {
+        ipcRenderer.on(eventName, (event, data) => {
+          krot[eventName](/*data.msg*/);
+        });
+      });
+  }
+}
+
+window.game = new Phaser.Game(10, 10, Phaser.CANVAS, "", State);

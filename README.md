@@ -1,3 +1,1 @@
 # krot
-
-### Pixi editor

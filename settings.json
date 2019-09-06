@@ -2,17 +2,16 @@
   "settings": [
     {
       "imagesDirs": [
-        "D:\\Projects\\ARMGames\\krot\\assets\\images"
+        "C:\\Users\\roman.kopanskyi\\Projects\\cookie-crush-2\\BuildSource\\assets\\images",
+        "C:\\Users\\roman.kopanskyi\\Projects\\cookie-crush-2\\BuildSource\\assets\\img"
       ],
       "atlasesDirs": [
-        "D:\\Projects\\ARMGames\\krot\\assets\\atlases"
+        "C:\\Users\\roman.kopanskyi\\Projects\\cookie-crush-2\\BuildSource\\assets\\spritesheets"
       ],
       "fontsDirs": [
-        "D:\\Projects\\ARMGames\\krot\\assets\\fonts"
+        "C:\\Users\\roman.kopanskyi\\Projects\\cookie-crush-2\\BuildSource\\assets\\fonts"
       ],
-      "googleFonts": [
-        "Anton"
-      ],
+      "googleFonts": [],
       "standardFonts": [
         "Arial"
       ]

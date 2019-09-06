@@ -1,32 +1,31 @@
 const {createControllerBuilder} = require('./builder');
-const {Signal} = require('signals.js');
 
-class ContainerController {
+class GroupController {
   constructor(gui, getTreeHash, debugGraphics) {
     this.gui = gui;
     this.getTreeHash = getTreeHash;
     this.debugGraphics = debugGraphics;
     this.generalFolder = gui.addFolder('General');
     this.object = {name: '', parent: {name: ''}};
-    this.onTreeChange = new Signal();
+    this.onTreeChange = new Phaser.Signal();
     this.folders = [this.generalFolder];
     this.__visible = false;
 
-    app.ticker.add(this.update, this);
+    game.time.events.loop(1000 / 60, this.update, this);
 
     const generalControllers = [
-      {prop: 'name', defaults: ''},
-      {prop: 'class', defaults: ''},
-      {prop: 'x', defaults: 0, round: true},
-      {prop: 'y', defaults: 0, round: true},
-      {prop: 'scale.x', defaults: 1, step: 0.01},
-      {prop: 'scale.y', defaults: 1, step: 0.01},
-      {prop: 'angle', defaults: 0, round: true},
-      {prop: 'alpha', min: 0, max: 1, defaults: 1, step: 0.01},
-      {prop: 'visible', defaults: true},
-      {prop: 'parent', args: [[]], defaults: ''},
-      {prop: 'pivot.x', defaults: 0, step: 1, round: true},
-      {prop: 'pivot.y', defaults: 0, step: 1, round: true},
+      {prop: "name", defaults: ""},
+      {prop: "class", defaults: ""},
+      {prop: "x", defaults: 0, round: true},
+      {prop: "y", defaults: 0, round: true},
+      {prop: "scale.x", step: 0.001, defaults: 1},
+      {prop: "scale.y", step: 0.001, defaults: 1},
+      {prop: "angle", defaults: 0, round: true},
+      {prop: "alpha", min: 0, max: 1, step: 0.01, defaults: 1},
+      {prop: "visible", defaults: true},
+      {prop: "parent", args: [[]], defaults: ""},
+      {prop: "pivot.x", defaults: 0, step: 1, round: true},
+      {prop: "pivot.y", defaults: 0, step: 1, round: true},
     ].map(createControllerBuilder(this, this.generalFolder));
 
     this.parentController = generalControllers.find(c => c.property === 'parent');
@@ -89,7 +88,7 @@ class ContainerController {
   getSaveObject(object) {
     return {
       name: object.name,
-      type: 'Container',
+      type: "Group",
       class: object.class,
       x: object.x,
       y: object.y,
@@ -97,7 +96,7 @@ class ContainerController {
       angle: object.angle,
       alpha: object.alpha,
       visible: object.visible,
-      parent: this.getTreeHash()[object.parent.name] ? object.parent.name : '',
+      parent: this.getTreeHash()[object.parent.name] ? object.parent.name : "",
       pivot: {x: object.pivot.x, y: object.pivot.y},
     };
   }
@@ -105,7 +104,7 @@ class ContainerController {
   update() {
     if (!this.__visible) return;
 
-    const pos = this.debugGraphics.toLocal(new PIXI.Point(), this.object);
+    const pos = this.debugGraphics.toLocal(new Phaser.Point(), this.object);
     this.debugGraphics.clear();
 
     [
@@ -118,4 +117,4 @@ class ContainerController {
   }
 }
 
-module.exports = {ContainerController};
+module.exports = {GroupController};

@@ -2,14 +2,9 @@ const {defaultRawUi} = require('./config');
 
 class Ground {
   constructor() {
-    const view = new PIXI.Container();
-    app.stage.addChild(view);
-
-    const border = new PIXI.Graphics();
-    view.addChild(border);
-
-    const debugGraphics = new PIXI.Graphics();
-    view.addChild(debugGraphics);
+    const view = game.add.group();
+    const border = game.add.graphics(0, 0, view);
+    const debugGraphics = game.add.graphics(0, 0, view);
 
     this.borderWidth = defaultRawUi.width;
     this.borderHeight = defaultRawUi.height;
@@ -19,35 +14,32 @@ class Ground {
     this.drag = {dx: 0, dy: 0};
     this.debugGraphics = debugGraphics;
 
-    app.renderer.plugins.interaction.on('mousedown', (e) => {
-      this.drag.dx = view.x - e.data.global.x;
-      this.drag.dy = view.y - e.data.global.y;
-      app.ticker.add(this.dragUpdate, this);
+    game.input.onDown.add(() => {
+      const dx = view.x - game.input.x;
+      const dy = view.y - game.input.y;
+
+      view.update = () => {
+        view.x = game.input.x + dx;
+        view.y = game.input.y + dy;
+        this.clampView();
+      };
     });
 
-    app.renderer.plugins.interaction.on('mouseup', () => app.ticker.remove(this.dragUpdate, this));
+    game.input.onUp.add(() => view.update = () => "");
 
-    app.view.addEventListener('wheel', e => {
-      const multiplier = 1 - (e.wheelDeltaY > 0 ? -1 : 1) * 0.04;
-      const x = app.renderer.plugins.interaction.mouse.global.x;
-      const y = app.renderer.plugins.interaction.mouse.global.y;
-      view.x = x + (view.x - x) * multiplier;
-      view.y = y + (view.y - y) * multiplier;
+    game.renderer.view.addEventListener("wheel", e => {
+      const multiplier = 1 - Phaser.Math.sign(e.deltaY) * 0.04;
+      view.x = game.input.x + (view.x - game.input.x) * multiplier;
+      view.y = game.input.y + (view.y - game.input.y) * multiplier;
       view.scale.x *= multiplier;
       view.scale.y *= multiplier;
       this.clampView();
     });
   }
 
-  dragUpdate() {
-    this.view.x = app.renderer.plugins.interaction.mouse.global.x + this.drag.dx;
-    this.view.y = app.renderer.plugins.interaction.mouse.global.y + this.drag.dy;
-    this.clampView();
-  }
-
   clampView() {
-    this.view.x = Math.max(-this.borderWidth, Math.min(app.screen.width, this.view.x));
-    this.view.y = Math.max(-this.borderHeight, Math.min(app.screen.height, this.view.y));
+    this.view.x = Phaser.Math.clamp(this.view.x, -this.borderWidth, game.width);
+    this.view.y = Phaser.Math.clamp(this.view.y, -this.borderHeight, game.height);
   }
 
   set width(v) {
@@ -80,7 +72,7 @@ class Ground {
 
   setTree(tree) {
     this.tree = tree;
-    this.view.addChildAt(tree, 0);
+    this.view.addAt(tree, 0);
   }
 
   align() {

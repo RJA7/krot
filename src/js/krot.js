@@ -1,37 +1,36 @@
-const {ContainerController} = require('./controllers/container-controller');
-const {SpriteController} = require('./controllers/sprite-controller');
-const {TextController} = require('./controllers/text-controller');
-const {makeUniqueName} = require('./utils');
-const {defaultRawUi} = require('./config');
-const {populate, init} = require('krot-pixi');
-const {Handler} = require('./handler');
-const {History} = require('./history');
-const {Ground} = require('./ground');
-const {GUI} = require('dat.gui');
-const PIXI = require('pixi.js');
-
-init(PIXI);
+const {NineSliceController} = require("./controllers/nine-slice-controller");
+const {GroupController} = require("./controllers/group-controller");
+const {SpriteController} = require("./controllers/sprite-controller");
+const {TextController} = require("./controllers/text-controller");
+const {makeUniqueName} = require("./utils");
+const {defaultRawUi} = require("./config");
+const {populate} = require("../../krot-phaser");
+const {Handler} = require("./handler");
+const {History} = require("./history");
+const {Ground} = require("./ground");
+const {GUI} = require("dat.gui");
 
 class Krot {
   constructor() {
     this.createGui();
     const getParams = () => [new GUI({width: 400}), () => this.getHash(), this.ground.debugGraphics];
     this.spriteController = new SpriteController(...getParams());
-    this.containerController = new ContainerController(...getParams());
+    this.groupController = new GroupController(...getParams());
     this.textController = new TextController(...getParams());
-    this.controllers = [this.containerController, this.spriteController, this.textController];
+    this.nineSliceController = new NineSliceController(...getParams());
+    this.controllers = [this.groupController, this.spriteController, this.textController, this.nineSliceController];
     this.history = new History();
     this.selectedObject = null;
     this.hash = {};
 
     // window.addEventListener('blur', () => this.history.save());
     // window.addEventListener('beforeunload', () => this.history.save());
-    window.addEventListener('blur', () => this.history.putIfChanged(this.handler.getRawUi()), true);
+    window.addEventListener("blur", () => this.history.putIfChanged(this.handler.getRawUi()), true);
 
-    window.addEventListener('click', (e) => {
-      const classes = ['function', 'slider'];
+    window.addEventListener("click", (e) => {
+      const classes = ["function", "slider"];
 
-      if (e.target.type === 'checkbox' || classes.find(name => e.target.classList.contains(name))) {
+      if (e.target.type === "checkbox" || classes.find(name => e.target.classList.contains(name))) {
         this.history.putIfChanged(this.handler.getRawUi());
       }
     }, true);
@@ -43,7 +42,7 @@ class Krot {
     this.history.put(this.handler.getRawUi());
 
     window.onbeforeunload = (e) => {
-      if (this.handler.isChanged() && confirm('Save current file?')) {
+      if (this.handler.isChanged() && confirm("Save current file?")) {
         e.returnValue = false;
         return this.handler.save();
       }
@@ -59,7 +58,7 @@ class Krot {
       this.history.put(this.handler.getRawUi());
     };
 
-    if (this.handler.isChanged() && confirm('Save current file?')) {
+    if (this.handler.isChanged() && confirm("Save current file?")) {
       return this.handler.save(cb);
     }
 
@@ -67,7 +66,7 @@ class Krot {
   }
 
   open() {
-    if (this.handler.isChanged() && confirm('Save current file?')) {
+    if (this.handler.isChanged() && confirm("Save current file?")) {
       return this.handler.save();
     }
 
@@ -140,7 +139,7 @@ class Krot {
     const originNameCopyNameMap = {};
 
     const makeCopyName = name => {
-      const _index = name.lastIndexOf('_');
+      const _index = name.lastIndexOf("_");
 
       if (_index === -1 || isNaN(Number(name.slice(_index + 1)))) {
         return makeUniqueName(name, this.hash);
@@ -202,43 +201,52 @@ class Krot {
     const handler = new Handler((rawUi) => this.setRawUi(rawUi), ground);
     const gui = new GUI();
 
-    const viewGui = gui.addFolder('View');
-    const widthController = viewGui.add(ground, 'width', 0);
-    const heightController = viewGui.add(ground, 'height', 0);
+    const viewGui = gui.addFolder("View");
+    const nameController = viewGui.add(handler, "name");
+    const widthController = viewGui.add(ground, "width", 0);
+    const heightController = viewGui.add(ground, "height", 0);
 
     [widthController, heightController]
       .forEach(controller => controller.step(10));
 
     this.widthController = widthController;
     this.heightController = heightController;
-    this.treeGui = gui.addFolder('Tree');
+    this.treeGui = gui.addFolder("Tree");
     this.handler = handler;
     this.ground = ground;
     this.gui = gui;
   }
 
-  container() {
-    const container = new PIXI.Container();
-    container.controller = this.containerController;
-    this.add(container, 'container');
+  group() {
+    const group = new Phaser.Group(game);
+    group.controller = this.groupController;
+    this.add(group, "group");
   }
 
   sprite() {
-    const sprite = new PIXI.Sprite();
+    const sprite = new Phaser.Sprite(game, 0, 0);
     sprite.controller = this.spriteController;
-    this.add(sprite, 'sprite');
+    sprite.textureName = "__missing";
+    this.add(sprite, "sprite");
   }
 
   text() {
-    const text = new PIXI.Text('New Text');
+    const text = new Phaser.Text(game, 0, 0, "New Text");
     text.controller = this.textController;
-    this.add(text, 'text');
+    this.add(text, "text");
+  }
+
+  nineSlice() {
+    const nineSlice = new Phaser.NineSlice(game);
+    nineSlice.controller = this.nineSliceController;
+    nineSlice.textureName = "__missing";
+    this.add(nineSlice, "nineSlice");
   }
 
   // Methods
   add(object, prefix) {
     object.name = makeUniqueName(prefix, this.hash);
-    object.class = '';
+    object.class = "";
     (this.selectedObject || this.ground.tree).addChild(object);
 
     this.refreshTreeAndHash();
@@ -255,8 +263,8 @@ class Krot {
 
   refreshTreeAndHash() {
     this.gui.removeFolder(this.treeGui);
-    this.treeGui = this.gui.addFolder('Tree');
-    this.treeGui.domElement.classList.add('full-width-property');
+    this.treeGui = this.gui.addFolder("Tree");
+    this.treeGui.domElement.classList.add("full-width-property");
     this.treeGui.open();
     this.hash = {};
 
@@ -267,7 +275,7 @@ class Krot {
       object.children.forEach(child => traverse(child, `⠀${prefix}`));
     };
 
-    traverse(this.ground.tree, '');
+    traverse(this.ground.tree, "");
   }
 }
 

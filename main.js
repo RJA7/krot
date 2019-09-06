@@ -106,9 +106,9 @@ const createWindow = () => {
       label: 'Object',
       submenu: [
         {
-          label: 'Container',
+          label: "Group",
           click: () => {
-            mainWindow.webContents.send('container');
+            mainWindow.webContents.send("group");
           },
         },
         {
