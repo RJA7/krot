@@ -58,6 +58,15 @@ class Handler {
       classHash[className].push(name);
     });
 
+    const getClassType = (className) => {
+      const namesList = classHash[className];
+      const hasGroup = namesList.find(name => hash[name].type === "Group");
+      const hasSprite = namesList.find(name => hash[name].type === "Sprite");
+      const hasText = namesList.find(name => hash[name].type === "Text");
+
+      return hasGroup || hasSprite && hasText ? "Group" : hasSprite ? "Sprite" : "Text";
+    };
+
     const data = this.getRawUi(writeClasses, hash);
     const fields = data.list.map(raw => raw.name);
     const classFields = Object.keys(classHash).filter(name => classHash[name].length !== 0);
