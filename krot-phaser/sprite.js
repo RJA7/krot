@@ -1,4 +1,4 @@
-const {getKeyAndFrameName, isDefaultFrame} = require("./utils");
+const {getKeyAndFrameName, getImageByTextureName} = require("./utils");
 
 const Sprite = Phaser.Sprite;
 
@@ -30,7 +30,8 @@ Object.defineProperty(Phaser.Sprite.prototype, "textureName", {
   },
 
   get() {
-    return isDefaultFrame(this.key, this.animations.frameName) ? this.key : this.frameName;
+    const image = getImageByTextureName(this.key);
+    return image.frameData.getFrames().length === 1 ? this.key : this.frameName;
   },
 });
 

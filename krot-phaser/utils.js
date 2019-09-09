@@ -56,9 +56,4 @@ const getImageByTextureName = (textureName) => {
   return null;
 };
 
-const isDefaultFrame = (key, frameName) => {
-  const image = game.cache.getImage(key, Phaser.Cache.IMAGE);
-  return image.frameData.getFrame(0).name === frameName;
-};
-
-module.exports = {getKeyAndFrameName, getImageByTextureName, isDefaultFrame};
+module.exports = {getKeyAndFrameName, getImageByTextureName};
