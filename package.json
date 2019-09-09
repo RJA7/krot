@@ -16,7 +16,7 @@
     "lodash": "^4.17.11",
     "stringify-object": "^3.3.0",
     "webfontloader": "^1.6.28",
-    "krot-phaser": "^1.0.3"
+    "krot-phaser": "^1.0.4"
   },
   "devDependencies": {
     "electron": "^1.8.2",

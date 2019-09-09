@@ -243,8 +243,8 @@ Phaser.Text.prototype.updateText = function (adjusted) {
   for (let i = 0; i < drawnLines; i++) {
     //  Split the line by
 
-    linePositionX = this.style.strokeThickness / 2;
-    linePositionY = (this.style.strokeThickness / 2 + i * lineHeight) + fontProperties.ascent;
+    linePositionX = (this.style.strokeThickness + this.padding.x) / 2;
+    linePositionY = ((this.style.strokeThickness + this.padding.y) / 2 + i * lineHeight) + fontProperties.ascent;
 
     if (i > 0) {
       linePositionY += (lineSpacing * i);
