@@ -123,6 +123,12 @@ const createWindow = () => {
             mainWindow.webContents.send('text');
           },
         },
+        {
+          label: "NineSlice",
+          click: () => {
+            mainWindow.webContents.send("nineSlice");
+          },
+        },
       ],
     },
   ];
@@ -130,7 +136,7 @@ const createWindow = () => {
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
 
-  // mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 };
 
 app.on('ready', createWindow);

@@ -71,7 +71,7 @@ class State extends Phaser.State {
   create() {
     const krot = new Krot();
 
-    ["new", "open", "save", "saveAs", "undo", "redo", "moveDown", "moveUp", "clone", "destroy", "group", "sprite", "text"]
+    ["new", "open", "save", "saveAs", "undo", "redo", "moveDown", "moveUp", "clone", "destroy", "group", "sprite", "text", "nineSlice"]
       .forEach((eventName) => {
         ipcRenderer.on(eventName, (event, data) => {
           krot[eventName](/*data.msg*/);

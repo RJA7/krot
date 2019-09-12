@@ -128,7 +128,8 @@ class Krot {
 
     this.selectedObject.destroy();
     this.refreshTreeAndHash();
-    this.selectedObject.controller.gui.hide();
+    this.selectedObject.controller.hide();
+    this.selectedObject = null;
   }
 
   clone() {
