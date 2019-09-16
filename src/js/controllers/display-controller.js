@@ -9,6 +9,7 @@ class DisplayController extends ContainerController {
       {prop: 'anchor.x', defaults: 0, step: 0.01},
       {prop: 'anchor.y', defaults: 0, step: 0.01},
       {prop: 'interactive', defaults: false},
+      {prop: 'buttonMode', defaults: false},
     ].forEach(createControllerBuilder(this, this.generalFolder));
   }
 
@@ -19,6 +20,7 @@ class DisplayController extends ContainerController {
       {
         anchor: {x: object.anchor.x, y: object.anchor.y},
         interactive: object.interactive,
+        buttonMode: object.buttonMode,
       },
     );
   }

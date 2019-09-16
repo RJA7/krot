@@ -55,7 +55,7 @@ db.getRows('settings', process.cwd(), {}, async (success, result) => {
     });
   });
 
-  promises.push(new Promise(resolve => {
+  settings.googleFonts.length && promises.push(new Promise(resolve => {
     WebFont.load({
       active: resolve,
       inactive: resolve,

@@ -2,6 +2,8 @@ const stringifyObject = require('stringify-object');
 const {remote} = require('electron');
 const fs = require('fs');
 
+const token = '/* raw */';
+
 class Handler {
   constructor(setRawUi, ground) {
     this.setRawUi = setRawUi;
@@ -27,7 +29,7 @@ class Handler {
       let rawUi = null;
 
       try {
-        eval(`rawUi = ${file.split('const rawUi = ')[1].split('export default class {')[0]}`);
+        eval(`rawUi = ${file.split(token)[1]}`);
         this.setRawUi(rawUi);
         this.filePath = filePaths[0];
         cb();
@@ -54,9 +56,9 @@ class Handler {
     const fields = data.list.map(raw => raw.name);
     const classFields = Object.keys(classHash).filter(name => classHash[name].length !== 0);
 
-    const file = `import { populate } from 'krot';
+    const file = `import { populate } from 'krot-pixi';
 
-const rawUi = ${stringifyObject(data)};
+const rawUi = ${token}${stringifyObject(data)};${token}
 
 export default class {
   constructor(filter) {
