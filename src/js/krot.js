@@ -1,13 +1,14 @@
-const {ContainerController} = require('./controllers/container-controller');
-const {SpriteController} = require('./controllers/sprite-controller');
-const {TextController} = require('./controllers/text-controller');
-const {makeUniqueName} = require('./utils');
-const {defaultRawUi} = require('./config');
-const {populate, init} = require('krot-pixi');
-const {Handler} = require('./handler');
-const {History} = require('./history');
-const {Ground} = require('./ground');
-const {GUI} = require('dat.gui');
+const { ContainerController } = require('./controllers/container-controller');
+const { SpriteController } = require('./controllers/sprite-controller');
+const { TextController } = require('./controllers/text-controller');
+const { makeUniqueName } = require('./utils');
+const { defaultRawUi } = require('./config');
+const { populate, init } = require('krot-pixi');
+const { Handler } = require('./handler');
+const { History } = require('./history');
+const { remote } = require('electron');
+const { Ground } = require('./ground');
+const { GUI } = require('dat.gui');
 const PIXI = require('pixi.js');
 
 init(PIXI);
@@ -15,7 +16,7 @@ init(PIXI);
 class Krot {
   constructor() {
     this.createGui();
-    const getParams = () => [new GUI({width: 400}), () => this.getHash(), this.ground.debugGraphics];
+    const getParams = () => [new GUI({ width: 400 }), () => this.getHash(), this.ground.debugGraphics];
     this.spriteController = new SpriteController(...getParams());
     this.containerController = new ContainerController(...getParams());
     this.textController = new TextController(...getParams());
@@ -24,8 +25,6 @@ class Krot {
     this.selectedObject = null;
     this.hash = {};
 
-    // window.addEventListener('blur', () => this.history.save());
-    // window.addEventListener('beforeunload', () => this.history.save());
     window.addEventListener('blur', () => this.history.putIfChanged(this.handler.getRawUi()), true);
 
     window.addEventListener('click', (e) => {
@@ -37,45 +36,47 @@ class Krot {
     }, true);
 
     this.controllers.forEach(c => c.onTreeChange.add(() => this.refreshTreeAndHash()));
-    this.setRawUi();
-    this.ground.align();
-    this.handler.new();
-    this.history.put(this.handler.getRawUi());
 
     window.onbeforeunload = (e) => {
-      if (this.handler.isChanged() && confirm('Save current file?')) {
-        e.returnValue = false;
-        return this.handler.save();
-      }
+      if (!this.handler.isChanged()) return;
+      window.onbeforeunload = () => void 0;
+
+      e.returnValue = false;
+
+      const options = {
+        buttons: ['Yes', 'No'],
+        message: 'Save current file?',
+      };
+
+      remote.dialog.showMessageBox(remote.getCurrentWindow(), options, (response) => {
+        const close = () => remote.getCurrentWindow().close();
+        response === 0 ? this.handler.save(close) : close();
+      });
     };
   }
 
   new() {
-    const cb = () => {
-      this.setRawUi();
-      this.handler.new();
+    this.setRawUi();
+    this.handler.new();
+    this.ground.align();
+    this.history.clear();
+    this.history.put(this.handler.getRawUi());
+  }
+
+  open(filePath) {
+    this.handler.open(filePath, () => {
       this.ground.align();
       this.history.clear();
       this.history.put(this.handler.getRawUi());
-    };
+    });
+  }
 
+  requestSave(cb) {
     if (this.handler.isChanged() && confirm('Save current file?')) {
       return this.handler.save(cb);
     }
 
     cb();
-  }
-
-  open() {
-    if (this.handler.isChanged() && confirm('Save current file?')) {
-      return this.handler.save();
-    }
-
-    this.handler.open(() => {
-      this.ground.align();
-      this.history.clear();
-      this.history.put(this.handler.getRawUi());
-    });
   }
 
   save() {
@@ -107,6 +108,7 @@ class Krot {
     children[index] = children[index - 1];
     children[index - 1] = this.selectedObject;
     this.refreshTreeAndHash();
+    this.history.put(this.handler.getRawUi());
   }
 
   moveUp() {
@@ -120,6 +122,7 @@ class Krot {
     children[index] = children[index + 1];
     children[index + 1] = this.selectedObject;
     this.refreshTreeAndHash();
+    this.history.put(this.handler.getRawUi());
   }
 
   destroy() {
@@ -130,6 +133,7 @@ class Krot {
     this.selectedObject.destroy();
     this.refreshTreeAndHash();
     this.selectedObject.controller.gui.hide();
+    this.history.put(this.handler.getRawUi());
   }
 
   clone() {
@@ -263,7 +267,7 @@ class Krot {
     const traverse = (object, prefix) => {
       this.hash[object.name] = object;
       const name = `${prefix}${object.name}`;
-      this.treeGui.add({[name]: () => this.selectObject(object)}, name);
+      this.treeGui.add({ [name]: () => this.selectObject(object) }, name);
       object.children.forEach(child => traverse(child, `⠀${prefix}`));
     };
 

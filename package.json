@@ -23,10 +23,5 @@
   "devDependencies": {
     "electron": "^1.8.2",
     "electron-builder": "^19.56.0"
-  },
-  "build": {
-    "extraFiles": [
-      "settings.json"
-    ]
   }
 }
