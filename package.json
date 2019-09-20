@@ -12,7 +12,6 @@
   "license": "ISC",
   "dependencies": {
     "dat.gui": "^0.7.6",
-    "electron-db": "^0.15.2",
     "lodash": "^4.17.11",
     "pixi.js": "^5.1.1",
     "signals.js": "^1.0.2",

@@ -133,6 +133,7 @@ const createWindow = () => {
   mainWindow.webContents.openDevTools();
 };
 
+
 app.on('ready', createWindow);
 app.on('window-all-closed', () => process.platform !== 'darwin' && app.quit());
 app.on('activate', () => mainWindow === null && createWindow());

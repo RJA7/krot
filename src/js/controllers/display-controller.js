@@ -8,6 +8,8 @@ class DisplayController extends ContainerController {
     [
       {prop: 'anchor.x', defaults: 0, step: 0.01},
       {prop: 'anchor.y', defaults: 0, step: 0.01},
+      {prop: 'tint', defaults: 0xffffff, color: true},
+      {prop: 'blendMode', defaults: PIXI.BLEND_MODES.NORMAL, list: PIXI.BLEND_MODES},
       {prop: 'interactive', defaults: false},
       {prop: 'buttonMode', defaults: false},
     ].forEach(createControllerBuilder(this, this.generalFolder));

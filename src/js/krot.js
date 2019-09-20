@@ -6,7 +6,6 @@ const { defaultRawUi } = require('./config');
 const { populate, init } = require('krot-pixi');
 const { Handler } = require('./handler');
 const { History } = require('./history');
-const { remote } = require('electron');
 const { Ground } = require('./ground');
 const { GUI } = require('dat.gui');
 const PIXI = require('pixi.js');
@@ -25,34 +24,7 @@ class Krot {
     this.selectedObject = null;
     this.hash = {};
 
-    window.addEventListener('blur', () => this.history.putIfChanged(this.handler.getRawUi()), true);
-
-    window.addEventListener('click', (e) => {
-      const classes = ['function', 'slider'];
-
-      if (e.target.type === 'checkbox' || classes.find(name => e.target.classList.contains(name))) {
-        this.history.putIfChanged(this.handler.getRawUi());
-      }
-    }, true);
-
     this.controllers.forEach(c => c.onTreeChange.add(() => this.refreshTreeAndHash()));
-
-    window.onbeforeunload = (e) => {
-      if (!this.handler.isChanged()) return;
-      window.onbeforeunload = () => void 0;
-
-      e.returnValue = false;
-
-      const options = {
-        buttons: ['Yes', 'No'],
-        message: 'Save current file?',
-      };
-
-      remote.dialog.showMessageBox(remote.getCurrentWindow(), options, (response) => {
-        const close = () => remote.getCurrentWindow().close();
-        response === 0 ? this.handler.save(close) : close();
-      });
-    };
   }
 
   new() {
@@ -64,11 +36,9 @@ class Krot {
   }
 
   open(filePath) {
-    this.handler.open(filePath, () => {
-      this.ground.align();
-      this.history.clear();
-      this.history.put(this.handler.getRawUi());
-    });
+    this.handler.open(filePath);
+    this.history.clear();
+    this.history.put(this.handler.getRawUi());
   }
 
   requestSave(cb) {
@@ -200,6 +170,10 @@ class Krot {
       this.selectedObject = this.hash[this.selectedObject.name];
       this.selectedObject ? controller.setObject(this.selectedObject) : controller.hide();
     }
+  }
+
+  snapshot() {
+    this.history.putIfChanged(this.handler.getRawUi());
   }
 
   createGui() {

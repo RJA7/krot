@@ -21,13 +21,11 @@ class Handler {
     return this.savedJson !== JSON.stringify(this.getRawUi());
   }
 
-  open(filePath, cb) {
-    const file = fs.readFileSync(filePath, 'utf8');
-    let rawUi = null;
-    eval(`rawUi = ${file.split(token)[1]}`);
+  open(filePath) {
+    const { rawUi } = require(filePath);
     this.setRawUi(rawUi);
     this.filePath = filePath;
-    cb();
+    this.ground.align();
   }
 
   save(cb) {
@@ -47,11 +45,11 @@ class Handler {
     const fields = data.list.map(raw => raw.name);
     const classFields = Object.keys(classHash).filter(name => classHash[name].length !== 0);
 
-    const file = `import { populate } from 'krot-pixi';
+    const file = `const { populate } = require('krot-pixi');
 
 const rawUi = ${token}${stringifyObject(data)};${token}
 
-export default class {
+class Layout {
   constructor(filter) {
 ${fields.map(name => `    this.${name} = null;`).join('\n')}`
       + (classFields.length ? '\n\n' : '') +
@@ -60,6 +58,8 @@ ${fields.map(name => `    this.${name} = null;`).join('\n')}`
     populate(this, rawUi, filter);
   }
 }
+
+module.exports = { Layout, rawUi };
 `;
 
     fs.writeFile(this.filePath, file, () => {

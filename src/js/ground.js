@@ -42,12 +42,6 @@ class Ground {
   dragUpdate() {
     this.view.x = app.renderer.plugins.interaction.mouse.global.x + this.drag.dx;
     this.view.y = app.renderer.plugins.interaction.mouse.global.y + this.drag.dy;
-    this.clampView();
-  }
-
-  clampView() {
-    this.view.x = Math.max(-this.borderWidth, Math.min(app.screen.width, this.view.x));
-    this.view.y = Math.max(-this.borderHeight, Math.min(app.screen.height, this.view.y));
   }
 
   set width(v) {
