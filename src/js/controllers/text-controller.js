@@ -1,6 +1,6 @@
-const {DisplayController} = require('./display-controller');
-const {createControllerBuilder} = require('./builder');
-const {fonts} = require('../config');
+const { DisplayController } = require('./display-controller');
+const { createControllerBuilder } = require('./builder');
+const { fonts } = require('../config');
 const PIXI = require('pixi.js');
 
 const fontWeights = [
@@ -20,37 +20,37 @@ class TextController extends DisplayController {
     this.object.style = new PIXI.TextStyle();
 
     [
-      {prop: 'text', defaults: ''},
+      { prop: 'text', defaults: '' },
     ].forEach(createControllerBuilder(this, this.generalFolder));
 
     [
-      {prop: 'align', defaults: 'left', list: ['left', 'center', 'right']},
-      {prop: 'breakWords', defaults: false},
-      {prop: 'dropShadow', defaults: false},
-      {prop: 'dropShadowAlpha', defaults: false, min: 0, max: 1},
-      {prop: 'dropShadowAngle', defaults: Number((Math.PI / 6).toFixed(2))},
-      {prop: 'dropShadowBlur', defaults: 0, round: true},
-      {prop: 'dropShadowColor', defaults: 'black'},
-      {prop: 'dropShadowDistance', defaults: 5, round: true},
-      {prop: 'fill', defaults: 'black'},
-      {prop: 'fontFamily', defaults: 'Arial', list: fonts},
-      {prop: 'fontSize', defaults: 26, round: true},
-      {prop: 'fontStyle', defaults: 'normal', list: ['normal', 'italic', 'oblique']},
-      {prop: 'fontVariant', defaults: 'normal', list: ['normal', 'small-caps']},
-      {prop: 'fontWeight', defaults: 'normal', list: fontWeights},
-      {prop: 'leading', defaults: 0, round: true},
-      {prop: 'letterSpacing', defaults: 0, round: true},
-      {prop: 'lineHeight', round: true},
-      {prop: 'lineJoin', defaults: 'miter', list: ['miter', 'round', 'bevel']},
-      {prop: 'miterLimit', defaults: 10, round: true},
-      {prop: 'padding', defaults: 0, round: true},
-      {prop: 'stroke', defaults: 'black'},
-      {prop: 'strokeThickness', defaults: 0, round: true},
-      {prop: 'trim', defaults: false},
-      {prop: 'textBaseline', defaults: 'alphabetic', list: baseLines},
-      {prop: 'whiteSpace', defaults: 'pre', list: ['normal', 'pre', 'pre-line']},
-      {prop: 'wordWrap', defaults: false},
-      {prop: 'wordWrapWidth', defaults: 100, round: true},
+      { prop: 'align', defaults: 'left', list: ['left', 'center', 'right'] },
+      { prop: 'breakWords', defaults: false },
+      { prop: 'dropShadow', defaults: false },
+      { prop: 'dropShadowAlpha', defaults: false, min: 0, max: 1 },
+      { prop: 'dropShadowAngle', defaults: Number((Math.PI / 6).toFixed(2)) },
+      { prop: 'dropShadowBlur', defaults: 0, round: true },
+      { prop: 'dropShadowColor', defaults: 'black' },
+      { prop: 'dropShadowDistance', defaults: 5, round: true },
+      { prop: 'fill', defaults: 'black' },
+      { prop: 'fontFamily', defaults: 'Arial', list: fonts },
+      { prop: 'fontSize', defaults: 26, round: true },
+      { prop: 'fontStyle', defaults: 'normal', list: ['normal', 'italic', 'oblique'] },
+      { prop: 'fontVariant', defaults: 'normal', list: ['normal', 'small-caps'] },
+      { prop: 'fontWeight', defaults: 'normal', list: fontWeights },
+      { prop: 'leading', defaults: 0, round: true },
+      { prop: 'letterSpacing', defaults: 0, round: true },
+      { prop: 'lineHeight', round: true },
+      { prop: 'lineJoin', defaults: 'miter', list: ['miter', 'round', 'bevel'] },
+      { prop: 'miterLimit', defaults: 10, round: true },
+      { prop: 'padding', defaults: 0, round: true },
+      { prop: 'stroke', defaults: 'black' },
+      { prop: 'strokeThickness', defaults: 0, round: true },
+      { prop: 'trim', defaults: false },
+      { prop: 'textBaseline', defaults: 'alphabetic', list: baseLines },
+      { prop: 'whiteSpace', defaults: 'pre', list: ['normal', 'pre', 'pre-line'] },
+      { prop: 'wordWrap', defaults: false },
+      { prop: 'wordWrapWidth', defaults: 100, round: true },
     ].forEach(createControllerBuilder(this, this.styleFolder, 'style.'));
   }
 
@@ -126,8 +126,7 @@ class TextController extends DisplayController {
       const lb = this.debugGraphics.toLocal(new PIXI.Point(localLT.x, localRB.y), object);
 
       [
-        [3, 0x000000, 1],
-        [1, 0xffffff, 1],
+        [1, 0x000000, 1],
       ].forEach(style => {
         this.debugGraphics.lineStyle(...style);
         this.debugGraphics.moveTo(lt.x, lt.y);
@@ -140,4 +139,4 @@ class TextController extends DisplayController {
   }
 }
 
-module.exports = {TextController};
+module.exports = { TextController };

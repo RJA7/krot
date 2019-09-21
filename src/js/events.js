@@ -16,7 +16,7 @@ function handleResize() {
   app.view.style.height = `${window.innerHeight}px`;
 }
 
-['save', 'saveAs', 'undo', 'redo', 'moveDown', 'moveUp', 'clone', 'destroy', 'container', 'sprite', 'text']
+['save', 'saveAs', 'undo', 'redo', 'moveDown', 'moveUp', 'clone', 'destroy', 'container', 'sprite', 'text', 'nineSlice']
   .forEach((eventName) => {
     ipcRenderer.on(eventName, (event, data) => {
       if (!isLive()) return;

@@ -109,8 +109,7 @@ class ContainerController {
     this.debugGraphics.clear();
 
     [
-      {style: [0x000000, 1], diameter: 6},
-      {style: [0xffffff, 1], diameter: 3},
+      {style: [0x000000, 1], diameter: 2},
     ].forEach(({style, diameter}) => {
       this.debugGraphics.beginFill(...style);
       this.debugGraphics.drawCircle(pos.x, pos.y, diameter);

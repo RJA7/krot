@@ -5,10 +5,7 @@ class SpriteController extends DisplayController {
   constructor(gui, getTreeHash, debugGraphics) {
     super(gui, getTreeHash, debugGraphics);
 
-    this.object = Object.assign(this.object, {
-      texture: {textureCacheIds: ['']},
-    });
-
+    this.object.texture = {textureCacheIds: ['']};
     this.generalFolder.add(this, 'texture');
   }
 

@@ -35,7 +35,6 @@ class Ground {
       view.y = y + (view.y - y) * multiplier;
       view.scale.x *= multiplier;
       view.scale.y *= multiplier;
-      this.clampView();
     });
   }
 

@@ -1,3 +1,4 @@
+const { NineSlicePlaneController } = require('./controllers/nineslice-controller');
 const { ContainerController } = require('./controllers/container-controller');
 const { SpriteController } = require('./controllers/sprite-controller');
 const { TextController } = require('./controllers/text-controller');
@@ -19,7 +20,8 @@ class Krot {
     this.spriteController = new SpriteController(...getParams());
     this.containerController = new ContainerController(...getParams());
     this.textController = new TextController(...getParams());
-    this.controllers = [this.containerController, this.spriteController, this.textController];
+    this.nineSlicePlaneController = new NineSlicePlaneController(...getParams());
+    this.controllers = [this.containerController, this.spriteController, this.textController, this.nineSlicePlaneController];
     this.history = new History();
     this.selectedObject = null;
     this.hash = {};
@@ -212,6 +214,16 @@ class Krot {
     const text = new PIXI.Text('New Text');
     text.controller = this.textController;
     this.add(text, 'text');
+  }
+
+  nineSlice() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 10;
+    canvas.height = 10;
+
+    const nineSlice = new PIXI.NineSlicePlane(PIXI.Texture.from(canvas));
+    nineSlice.controller = this.nineSlicePlaneController;
+    this.add(nineSlice, 'nineSlice');
   }
 
   // Methods

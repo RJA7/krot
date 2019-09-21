@@ -123,6 +123,12 @@ const createWindow = () => {
             mainWindow.webContents.send('text');
           },
         },
+        {
+          label: 'NineSlice',
+          click: () => {
+            mainWindow.webContents.send('nineSlice');
+          },
+        },
       ],
     },
   ];
