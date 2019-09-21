@@ -44,6 +44,9 @@ class NineSlicePlaneController extends ContainerController {
         topHeight: object.topHeight,
         rightWidth: object.rightWidth,
         bottomHeight: object.bottomHeight,
+        tint: object.tint,
+        blendMode: object.blendMode,
+        texture: this.object.texture.textureCacheIds[0],
       },
     );
   }

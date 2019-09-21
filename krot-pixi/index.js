@@ -34,6 +34,12 @@ const populate = (layout, rawUi, filter = {}) => {
     style: (raw, object) => Object.assign(object.style, raw.style),
     anchor: (raw, object) => Object.assign(object.anchor, raw.anchor),
     scale: (raw, object) => Object.assign(object.scale, raw.scale),
+
+    rectProps: (raw, object) => {
+      const [x, y, w, h, color, alpha] = raw.rectProps.split(',').map((v) => Number(v));
+      object.beginFill(color, alpha);
+      object.drawRect(x, y, w, h);
+    },
   };
 
   for (let i = 0, iLen = list.length; i < iLen; i++) {
@@ -48,7 +54,14 @@ const populate = (layout, rawUi, filter = {}) => {
     ) continue;
 
     const props = Object.keys(raw);
-    const object = new PIX[raw.type]();
+    let object;
+
+    if (raw.type === 'NineSlicePlane') {
+      object = new PIX.NineSlicePlane(PIXI.Texture.from(raw.texture));
+    } else {
+      object = new PIX[raw.type]();
+    }
+
     layout[name] = object;
 
     for (let j = 0, jLen = props.length; j < jLen; j++) {
@@ -66,4 +79,4 @@ const populate = (layout, rawUi, filter = {}) => {
 
 populate.localize = (string) => string;
 
-module.exports = {populate, init};
+module.exports = { populate, init };

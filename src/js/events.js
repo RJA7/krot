@@ -16,7 +16,7 @@ function handleResize() {
   app.view.style.height = `${window.innerHeight}px`;
 }
 
-['save', 'saveAs', 'undo', 'redo', 'moveDown', 'moveUp', 'clone', 'destroy', 'container', 'sprite', 'text', 'nineSlice']
+['save', 'saveAs', 'undo', 'redo', 'moveDown', 'moveUp', 'clone', 'destroy', 'container', 'sprite', 'text', 'nineSlice', 'graphics']
   .forEach((eventName) => {
     ipcRenderer.on(eventName, (event, data) => {
       if (!isLive()) return;
@@ -56,6 +56,7 @@ ipcRenderer.on('open', async (event, data) => {
   try {
     app.krot.open(filePath);
   } catch (e) {
+    console.log(e);
     alert('Wrong file format');
   }
 

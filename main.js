@@ -1,5 +1,5 @@
 const electron = require('electron');
-const {app, BrowserWindow, Menu} = electron;
+const { app, BrowserWindow, Menu } = electron;
 const path = require('path');
 const url = require('url');
 
@@ -49,8 +49,8 @@ const createWindow = () => {
             mainWindow.webContents.send('saveAs');
           },
         },
-        {type: 'separator'},
-        {role: 'quit'},
+        { type: 'separator' },
+        { role: 'quit' },
       ],
     },
 
@@ -71,7 +71,7 @@ const createWindow = () => {
             mainWindow.webContents.send('redo');
           },
         },
-        {type: 'separator'},
+        { type: 'separator' },
         {
           label: 'Move down',
           accelerator: 'CmdOrCtrl + D',
@@ -86,7 +86,7 @@ const createWindow = () => {
             mainWindow.webContents.send('moveUp');
           },
         },
-        {type: 'separator'},
+        { type: 'separator' },
         {
           label: 'Clone',
           click: () => {
@@ -129,6 +129,12 @@ const createWindow = () => {
             mainWindow.webContents.send('nineSlice');
           },
         },
+        {
+          label: 'Graphics',
+          click: () => {
+            mainWindow.webContents.send('graphics');
+          },
+        },
       ],
     },
   ];
@@ -136,7 +142,7 @@ const createWindow = () => {
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
 
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 };
 
 

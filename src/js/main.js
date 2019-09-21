@@ -11,6 +11,7 @@ window.PIXI = PIXI;
 const createApp = async (config) => {
   if (app) {
     document.body.removeChild(app.view);
+    PIXI.Loader.shared.reset();
     app.destroy();
     app.krot.gui.destroy();
     app.krot.controllers.forEach((controller) => controller.gui.destroy());

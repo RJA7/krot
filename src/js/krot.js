@@ -1,5 +1,6 @@
 const { NineSlicePlaneController } = require('./controllers/nineslice-controller');
 const { ContainerController } = require('./controllers/container-controller');
+const { GraphicsController } = require('./controllers/graphics-controller');
 const { SpriteController } = require('./controllers/sprite-controller');
 const { TextController } = require('./controllers/text-controller');
 const { makeUniqueName } = require('./utils');
@@ -21,7 +22,8 @@ class Krot {
     this.containerController = new ContainerController(...getParams());
     this.textController = new TextController(...getParams());
     this.nineSlicePlaneController = new NineSlicePlaneController(...getParams());
-    this.controllers = [this.containerController, this.spriteController, this.textController, this.nineSlicePlaneController];
+    this.graphicsController = new GraphicsController(...getParams());
+    this.controllers = [this.containerController, this.spriteController, this.textController, this.nineSlicePlaneController, this.graphicsController];
     this.history = new History();
     this.selectedObject = null;
     this.hash = {};
@@ -158,8 +160,12 @@ class Krot {
 
     rawUi.list.forEach((raw) => {
       const object = layout[raw.name];
-      object.controller = this[`${raw.type.toLowerCase()}Controller`];
+      object.controller = this[`${raw.type.charAt(0).toLocaleLowerCase()}${raw.type.slice(1)}Controller`];
       object.class = raw.class;
+
+      if (object.controller === this.graphicsController) {
+        object.rectProps = raw.rectProps;
+      }
     });
 
     this.widthController.setValue(rawUi.width);
@@ -218,12 +224,18 @@ class Krot {
 
   nineSlice() {
     const canvas = document.createElement('canvas');
-    canvas.width = 10;
-    canvas.height = 10;
-
     const nineSlice = new PIXI.NineSlicePlane(PIXI.Texture.from(canvas));
     nineSlice.controller = this.nineSlicePlaneController;
     this.add(nineSlice, 'nineSlice');
+  }
+
+  graphics() {
+    const graphics = new PIXI.Graphics();
+    graphics.controller = this.graphicsController;
+    graphics.rectProps = '0,0,100,100,0x000000,0.6';
+    graphics.beginFill(0x000000, 0.6);
+    graphics.drawRect(0, 0, 100, 100);
+    this.add(graphics, 'graphics');
   }
 
   // Methods

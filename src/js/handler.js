@@ -2,8 +2,6 @@ const stringifyObject = require('stringify-object');
 const { remote } = require('electron');
 const fs = require('fs');
 
-const token = '/* raw */';
-
 class Handler {
   constructor(setRawUi, ground) {
     this.setRawUi = setRawUi;
@@ -47,7 +45,7 @@ class Handler {
 
     const file = `const { populate } = require('krot-pixi');
 
-const rawUi = ${token}${stringifyObject(data)};${token}
+const rawUi = ${stringifyObject(data)};
 
 class Layout {
   constructor(filter) {
