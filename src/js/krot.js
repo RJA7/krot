@@ -3,14 +3,16 @@ const { ContainerController } = require('./controllers/container-controller');
 const { GraphicsController } = require('./controllers/graphics-controller');
 const { SpriteController } = require('./controllers/sprite-controller');
 const { TextController } = require('./controllers/text-controller');
+const { populate, init } = require('krot-pixi');
 const { makeUniqueName } = require('./utils');
 const { defaultRawUi } = require('./config');
-const { populate, init } = require('krot-pixi');
-const { Handler } = require('./handler');
+const { template } = require('./template');
 const { History } = require('./history');
+const { remote } = require('electron');
 const { Ground } = require('./ground');
 const { GUI } = require('dat.gui');
 const PIXI = require('pixi.js');
+const fs = require('fs');
 
 init(PIXI);
 
@@ -27,38 +29,77 @@ class Krot {
     this.history = new History();
     this.selectedObject = null;
     this.hash = {};
+    this.filePath = '';
+    this.savedJson = '';
 
     this.controllers.forEach(c => c.onTreeChange.add(() => this.refreshTreeAndHash()));
   }
 
+  isChanged() {
+    return this.savedJson !== JSON.stringify(this.getRawUi());
+  }
+
   new() {
-    this.setRawUi();
-    this.handler.new();
+    this.setRawUi(defaultRawUi);
+    this.filePath = '';
+    this.savedJson = JSON.stringify(defaultRawUi);
     this.ground.align();
     this.history.clear();
-    this.history.put(this.handler.getRawUi());
+    this.history.put(this.getRawUi());
   }
 
   open(filePath) {
-    this.handler.open(filePath);
+    const { rawUi } = require(filePath);
+    this.setRawUi(rawUi);
+    this.filePath = filePath;
+    this.ground.align();
     this.history.clear();
-    this.history.put(this.handler.getRawUi());
+    this.history.put(this.getRawUi());
   }
 
   requestSave(cb) {
-    if (this.handler.isChanged() && confirm('Save current file?')) {
-      return this.handler.save(cb);
+    if (this.isChanged() && confirm('Save current file?')) {
+      return this.save(cb);
     }
 
     cb();
   }
 
-  save() {
-    this.handler.save();
+  save(cb) {
+    if (!this.filePath) {
+      return this.saveAs(cb);
+    }
+
+    const classHash = {};
+    const hash = {};
+
+    const writeClasses = (classes, name) => classes.forEach(className => {
+      classHash[className] = classHash[className] || [];
+      classHash[className].push(name);
+    });
+
+    const data = this.getRawUi(writeClasses, hash);
+    const fields = data.list.map(raw => raw.name);
+    const classFields = Object.keys(classHash).filter(name => classHash[name].length !== 0);
+    const file = template({ data, fields, classFields });
+
+    fs.writeFile(this.filePath, file, () => {
+      this.savedJson = JSON.stringify(data);
+      cb && cb();
+    });
   }
 
-  saveAs() {
-    this.handler.saveAs();
+  saveAs(cb) {
+    remote.dialog.showSaveDialog(remote.getCurrentWindow(), {
+      filters: [{
+        extensions: ['js'],
+        name: '',
+      }],
+    }, (filePath) => {
+      if (!filePath) return;
+      this.filePath = filePath;
+      this.save(cb);
+    });
   }
 
   undo() {
@@ -82,7 +123,7 @@ class Krot {
     children[index] = children[index - 1];
     children[index - 1] = this.selectedObject;
     this.refreshTreeAndHash();
-    this.history.put(this.handler.getRawUi());
+    this.history.put(this.getRawUi());
   }
 
   moveUp() {
@@ -96,7 +137,7 @@ class Krot {
     children[index] = children[index + 1];
     children[index + 1] = this.selectedObject;
     this.refreshTreeAndHash();
-    this.history.put(this.handler.getRawUi());
+    this.history.put(this.getRawUi());
   }
 
   destroy() {
@@ -108,13 +149,13 @@ class Krot {
     this.refreshTreeAndHash();
     this.selectedObject.controller.hide();
     this.selectedObject = null;
-    this.history.put(this.handler.getRawUi());
+    this.history.put(this.getRawUi());
   }
 
   clone() {
     if (!this.selectedObject || this.selectedObject === this.ground.tree) return;
 
-    const rawUi = this.handler.getRawUi();
+    const rawUi = this.getRawUi();
     const stack = [this.selectedObject];
     const originNameCopyNameMap = {};
 
@@ -150,7 +191,7 @@ class Krot {
     return this.hash;
   }
 
-  setRawUi(rawUi = defaultRawUi) {
+  setRawUi(rawUi) {
     const layout = {};
 
     populate(layout, rawUi);
@@ -180,13 +221,34 @@ class Krot {
     }
   }
 
+  getRawUi(writeClasses = () => '', hash = {}) {
+    const data = {
+      width: this.ground.width,
+      height: this.ground.height,
+      list: [],
+    };
+
+    const stack = [this.ground.tree];
+
+    while (stack.length) {
+      const object = stack.shift();
+      hash[object.name] = object.controller.getSaveObject(object);
+      data.list.push(hash[object.name]);
+      stack.push(...object.children);
+
+      const classes = object.class.split(/\s+/).filter(v => v);
+      writeClasses(classes, object.name);
+    }
+
+    return data;
+  }
+
   snapshot() {
-    this.history.putIfChanged(this.handler.getRawUi());
+    this.history.putIfChanged(this.getRawUi());
   }
 
   createGui() {
     const ground = new Ground();
-    const handler = new Handler((rawUi) => this.setRawUi(rawUi), ground);
     const gui = new GUI();
 
     const viewGui = gui.addFolder('View');
@@ -199,7 +261,6 @@ class Krot {
     this.widthController = widthController;
     this.heightController = heightController;
     this.treeGui = gui.addFolder('Tree');
-    this.handler = handler;
     this.ground = ground;
     this.gui = gui;
   }
@@ -246,7 +307,7 @@ class Krot {
 
     this.refreshTreeAndHash();
     this.selectObject(object);
-    this.history.put(this.handler.getRawUi());
+    this.history.put(this.getRawUi());
   }
 
   selectObject(object) {

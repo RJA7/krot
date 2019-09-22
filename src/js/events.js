@@ -37,6 +37,7 @@ ipcRenderer.on('new', async (event, data) => {
 
   await createApp(getConfig(filePath));
   app.krot.new();
+  app.krot.filePath = filePath;
   handleResize();
 });
 
@@ -79,7 +80,7 @@ window.addEventListener('click', (e) => {
 }, true);
 
 window.onbeforeunload = (e) => {
-  if (!isLive() || !app.krot.handler.isChanged()) return;
+  if (!isLive() || !app.krot.isChanged()) return;
   window.onbeforeunload = () => void 0;
 
   e.returnValue = false;
@@ -91,7 +92,7 @@ window.onbeforeunload = (e) => {
 
   remote.dialog.showMessageBox(remote.getCurrentWindow(), options, (response) => {
     const close = () => remote.getCurrentWindow().close();
-    response === 0 ? this.handler.save(close) : close();
+    response === 0 ? app.krot.save(close) : close();
   });
 };
 
@@ -100,14 +101,14 @@ function getConfig(filePath) {
   let config;
 
   while (pathArray.length) {
-    pathArray.pop();
-
     try {
       config = require(`${pathArray.join('/')}/${configFileName}`)(PIXI);
       break;
     } catch (e) {
       // noop
     }
+
+    pathArray.pop();
   }
 
   if (!config) {
