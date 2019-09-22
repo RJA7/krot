@@ -1,16 +1,13 @@
-const defaultRawUi = {
-  name: 'Layout',
+const defaultRaw = {
   width: 640,
   height: 960,
   list: [
     {
-      type: 'Container',
+      Create: (PIXI) => new PIXI.Container(),
       name: 'root',
       class: '',
     },
   ],
 };
 
-const fonts = [];
-
-module.exports = {defaultRawUi, fonts};
+module.exports = { defaultRaw };

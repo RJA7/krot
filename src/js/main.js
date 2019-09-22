@@ -1,6 +1,5 @@
 const WebFont = require('webfontloader');
-const { fonts } = require('./config');
-const Krot = require('./krot');
+const Krot = require('./Krot');
 const PIXI = require('pixi.js');
 const path = require('path');
 const fs = require('fs');
@@ -14,11 +13,12 @@ const createApp = async (config) => {
     PIXI.Loader.shared.reset();
     app.destroy();
     app.krot.gui.destroy();
-    app.krot.controllers.forEach((controller) => controller.gui.destroy());
+    app.krot.controller && app.krot.controller.destroy();
   }
 
   window.app = new PIXI.Application();
   app.renderer.backgroundColor = 0x888888;
+  app.fonts = [];
   document.body.appendChild(app.view);
 
   const promises = [];
@@ -45,7 +45,7 @@ const createApp = async (config) => {
       promises.push(
         fontFace.load().then((loadedFace) => {
           document.fonts.add(loadedFace);
-          fonts.push(name);
+          app.fonts.push(name);
         }),
       );
     });
@@ -61,7 +61,7 @@ const createApp = async (config) => {
     });
   }));
 
-  fonts.push(...config.standardFonts, ...config.googleFonts);
+  app.fonts.push(...config.standardFonts, ...config.googleFonts);
   promises.push(new Promise(resolve => loader.load(resolve)));
 
   await Promise.all(promises);

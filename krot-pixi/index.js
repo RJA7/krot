@@ -1,66 +1,63 @@
-let PIX = null;
+let PIXI = null;
 
-const init = (PIXI) => PIX = PIXI;
+const init = (Library) => PIXI = Library;
 
 const containsLetter = (text) => /[A-Za-z]/.test(text);
 
-const populate = (layout, rawUi, filter = {}) => {
-  const list = rawUi.list;
+const handlerMap = {
+  class: (layout, item, object) => {
+    const classNames = item.class.split(/\s+/).filter(v => v);
 
-  const handlerMap = {
-    class: (raw, object) => {
-      const classNames = raw.class.split(/\s+/).filter(v => v);
+    for (let j = 0, kLen = classNames.length; j < kLen; j++) {
+      layout[classNames[j]].push(object);
+    }
+  },
 
-      for (let k = 0, kLen = classNames.length; k < kLen; k++) {
-        const className = classNames[k];
-        layout[className] = layout[className] || [];
-        layout[className].push(object);
-      }
-    },
+  parent: (layout, item, object) => {
+    const parent = layout[item.parent];
+    parent && parent.addChild(object);
+  },
 
-    parent: (raw, object) => {
-      const parent = layout[raw.parent];
-      parent && parent.addChild(object);
-    },
+  text: (layout, item, object) => {
+    object.text = containsLetter(item.text) ? populate.localize(item.text) : item.text;
+  },
 
-    text: (raw, object) => {
-      object.text = containsLetter(raw.text) ? populate.localize(raw.text) : raw.text;
-    },
+  texture: (layout, item, object) => {
+    object.texture = PIXI.Texture.from(item.texture);
+  },
 
-    texture: (raw, object) => {
-      object.texture = PIX.Texture.from(raw.texture);
-    },
+  style: (layout, item, object) => Object.assign(object.style, item.style),
+  anchor: (layout, item, object) => Object.assign(object.anchor, item.anchor),
+  scale: (layout, item, object) => Object.assign(object.scale, item.scale),
 
-    style: (raw, object) => Object.assign(object.style, raw.style),
-    anchor: (raw, object) => Object.assign(object.anchor, raw.anchor),
-    scale: (raw, object) => Object.assign(object.scale, raw.scale),
+  rectProps: (layout, item, object) => {
+    const [x, y, w, h, color, alpha] = item.rectProps.split(',').map((v) => Number(v));
+    object.beginFill(color, alpha);
+    object.drawRect(x, y, w, h);
+  },
+};
 
-    rectProps: (raw, object) => {
-      const [x, y, w, h, color, alpha] = raw.rectProps.split(',').map((v) => Number(v));
-      object.beginFill(color, alpha);
-      object.drawRect(x, y, w, h);
-    },
-  };
+const populate = (layout, raw, filter = {}) => {
+  const list = raw.list;
 
   for (let i = 0, iLen = list.length; i < iLen; i++) {
-    const raw = list[i];
-    const name = raw.name;
-    const classNames = raw.class.split(/\s+/);
+    const item = list[i];
+    const name = item.name;
+    const classNames = item.class.split(/\s+/).filter(v => v);
+
+    for (let j = 0, kLen = classNames.length; j < kLen; j++) {
+      const className = classNames[j];
+      layout[className] = layout[className] || [];
+    }
 
     if (
       filter[name] ||
       classNames.find(className => filter[className]) ||
-      (raw.parent && !layout[raw.parent])
+      (item.parent && !layout[item.parent])
     ) continue;
 
-    const props = Object.keys(raw);
-    let object;
-
-    if (raw.type === 'NineSlicePlane') {
-      object = new PIX.NineSlicePlane(PIXI.Texture.from(raw.texture));
-    } else {
-      object = new PIX[raw.type]();
-    }
+    const props = Object.keys(item);
+    const object = item.Create(PIXI);
 
     layout[name] = object;
 
@@ -69,9 +66,9 @@ const populate = (layout, rawUi, filter = {}) => {
       const handler = handlerMap[prop];
 
       if (handler) {
-        handler(raw, object);
+        handler(layout, item, object);
       } else {
-        object[prop] = raw[prop];
+        object[prop] = item[prop];
       }
     }
   }
@@ -79,4 +76,4 @@ const populate = (layout, rawUi, filter = {}) => {
 
 populate.localize = (string) => string;
 
-module.exports = { populate, init };
+module.exports = { init, populate, handlerMap };

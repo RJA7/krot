@@ -1,4 +1,4 @@
-const {defaultRawUi} = require('./config');
+const { defaultRaw } = require('./config');
 
 class History {
   constructor() {
@@ -28,25 +28,25 @@ class History {
 
   clear() {
     this.data.pointer = 0;
-    this.data.list = [defaultRawUi];
+    this.data.list = [defaultRaw];
   }
 
   save() {
     localStorage.setItem('data', JSON.stringify(this.data));
   }
 
-  isChanged(rawUi) {
+  isChanged(raw) {
     const current = this.data.list[this.data.pointer];
-    return JSON.stringify(rawUi) !== JSON.stringify(current);
+    return JSON.stringify(raw) !== JSON.stringify(current);
   }
 
-  putIfChanged(rawUi) {
-    this.isChanged(rawUi) && this.put(rawUi);
+  putIfChanged(raw) {
+    this.isChanged(raw) && this.put(raw);
   }
 
-  put(rawUi) {
+  put(raw) {
     this.data.list.length = this.data.pointer + 1;
-    this.data.list.push(rawUi);
+    this.data.list.push(raw);
     this.data.list.length > 100 && this.data.list.shift();
     this.data.pointer = this.data.list.length - 1;
   }
@@ -76,4 +76,4 @@ class History {
   }
 }
 
-module.exports = {History};
+module.exports = { History };

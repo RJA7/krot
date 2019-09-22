@@ -2,6 +2,8 @@ const electron = require('electron');
 const { app, BrowserWindow, Menu } = electron;
 const path = require('path');
 const url = require('url');
+const configMap = require(path.resolve(process.cwd(), 'js'));
+const debug = require(path.resolve(process.cwd(), 'js/common'));
 
 let mainWindow;
 
@@ -104,45 +106,21 @@ const createWindow = () => {
 
     {
       label: 'Object',
-      submenu: [
-        {
-          label: 'Container',
+      submenu: Object.keys(configMap).map((key) => {
+        return {
+          label: key,
           click: () => {
-            mainWindow.webContents.send('container');
+            mainWindow.webContents.send('create', key);
           },
-        },
-        {
-          label: 'Sprite',
-          click: () => {
-            mainWindow.webContents.send('sprite');
-          },
-        },
-        {
-          label: 'Text',
-          click: () => {
-            mainWindow.webContents.send('text');
-          },
-        },
-        {
-          label: 'NineSlice',
-          click: () => {
-            mainWindow.webContents.send('nineSlice');
-          },
-        },
-        {
-          label: 'Graphics',
-          click: () => {
-            mainWindow.webContents.send('graphics');
-          },
-        },
-      ],
+        };
+      }),
     },
   ];
 
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
 
-  mainWindow.webContents.openDevTools();
+  debug && mainWindow.webContents.openDevTools();
 };
 
 

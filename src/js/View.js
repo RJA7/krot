@@ -1,22 +1,14 @@
-const {defaultRawUi} = require('./config');
-
-class Ground {
+class View {
   constructor() {
     const view = new PIXI.Container();
     app.stage.addChild(view);
 
-    const border = new PIXI.Graphics();
-    view.addChild(border);
-
     const debugGraphics = new PIXI.Graphics();
     view.addChild(debugGraphics);
 
-    this.borderWidth = defaultRawUi.width;
-    this.borderHeight = defaultRawUi.height;
-    this.border = border;
     this.view = view;
     this.tree = null;
-    this.drag = {dx: 0, dy: 0};
+    this.drag = { dx: 0, dy: 0 };
     this.debugGraphics = debugGraphics;
 
     app.renderer.plugins.interaction.on('mousedown', (e) => {
@@ -43,45 +35,17 @@ class Ground {
     this.view.y = app.renderer.plugins.interaction.mouse.global.y + this.drag.dy;
   }
 
-  set width(v) {
-    this.borderWidth = v;
-    this.redrawBorder();
-  }
-
-  get width() {
-    return this.borderWidth;
-  }
-
-  set height(v) {
-    this.borderHeight = v;
-    this.redrawBorder();
-  }
-
-  get height() {
-    return this.borderHeight;
-  }
-
-  redrawBorder() {
-    this.border.clear();
-    this.border.lineStyle(2, 0x00ff00, 1);
-    this.border.drawRect(0, 0, this.borderWidth, this.borderHeight);
-  }
-
-  clean() {
-    this.tree && this.tree.destroy();
-  }
-
   setTree(tree) {
+    this.tree && this.tree.destroy();
     this.tree = tree;
     this.view.addChildAt(tree, 0);
   }
 
   align() {
-    const sc = Math.min(2, window.innerWidth / this.borderWidth, window.innerHeight / this.borderHeight) * 0.9;
-    this.view.scale.set(sc);
-    this.view.x = (window.innerWidth - this.borderWidth * sc) / 2;
-    this.view.y = (window.innerHeight - this.borderHeight * sc) / 2;
+    this.view.scale.set(1);
+    this.view.x = window.innerWidth / 2;
+    this.view.y = window.innerHeight / 2;
   }
 }
 
-module.exports = {Ground};
+module.exports = { View };

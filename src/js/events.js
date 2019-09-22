@@ -16,11 +16,11 @@ function handleResize() {
   app.view.style.height = `${window.innerHeight}px`;
 }
 
-['save', 'saveAs', 'undo', 'redo', 'moveDown', 'moveUp', 'clone', 'destroy', 'container', 'sprite', 'text', 'nineSlice', 'graphics']
+['save', 'saveAs', 'undo', 'redo', 'moveDown', 'moveUp', 'clone', 'destroy', 'create']
   .forEach((eventName) => {
     ipcRenderer.on(eventName, (event, data) => {
       if (!isLive()) return;
-      app.krot[eventName](/*data.msg*/);
+      app.krot[eventName](data);
     });
   });
 
@@ -47,7 +47,7 @@ ipcRenderer.on('open', async (event, data) => {
   const options = { filters: [{ extensions: ['js'], name: '' }] };
 
   const filePath = await new Promise((resolve) => {
-    remote.dialog.showOpenDialog(window, options, (filePaths) => resolve(filePaths[0]));
+    remote.dialog.showOpenDialog(window, options, (filePaths) => resolve(filePaths && filePaths[0]));
   });
 
   if (!filePath) return;
@@ -80,7 +80,7 @@ window.addEventListener('click', (e) => {
 }, true);
 
 window.onbeforeunload = (e) => {
-  if (!isLive() || !app.krot.isChanged()) return;
+  if (!isLive()) return;
   window.onbeforeunload = () => void 0;
 
   e.returnValue = false;
