@@ -13,11 +13,8 @@
   "dependencies": {
     "dat.gui": "^0.7.6",
     "lodash": "^4.17.11",
-    "pixi.js": "^5.1.1",
     "signals.js": "^1.0.2",
-    "stringify-object": "^3.3.0",
-    "webfontloader": "^1.6.28",
-    "krot-pixi": "1.0.1"
+    "stringify-object": "^3.3.0"
   },
   "devDependencies": {
     "electron": "^1.8.2",
@@ -25,7 +22,7 @@
   },
   "build": {
     "extraFiles": [
-      "js"
+      "plugins"
     ]
   }
 }

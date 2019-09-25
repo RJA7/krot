@@ -1,8 +1,6 @@
 const { floatPrecision, getNameField, getClassField, getParentField, debugPosition } = require('./common');
 
 module.exports = {
-  Create: (PIXI) => new PIXI.NineSlicePlane(document.createElement('canvas')),
-
   getFields: (object) => {
     return [
       getNameField(object),
@@ -32,7 +30,7 @@ module.exports = {
             object.texture = new PIXI.Texture.from(v);
             object.width = object.texture.width;
             object.height = object.texture.height;
-            app.krot.controller.gui.updateDisplay();
+            krot.controller.gui.updateDisplay();
           },
 
           get: () => {
@@ -49,7 +47,7 @@ module.exports = {
     const rb = new PIXI.Point(object.width - object.rightWidth, object.height - object.bottomHeight);
     const lb = new PIXI.Point(object.leftWidth, object.height - object.bottomHeight);
 
-    graphics.lineStyle(1, 0x000000, 1);
+    graphics.lineStyle(1, 0xA9B7C6, 1);
     graphics.beginFill(0, 0);
 
     const start = graphics.toLocal(lb, object);

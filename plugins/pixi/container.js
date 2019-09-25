@@ -1,8 +1,6 @@
 const { floatPrecision, getNameField, getClassField, getParentField, debugPosition } = require('./common');
 
 module.exports = {
-  Create: (PIXI) => new PIXI.Container(),
-
   getFields: (object) => {
     return [
       getNameField(object),

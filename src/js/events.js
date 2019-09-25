@@ -1,31 +1,17 @@
 const { ipcRenderer, remote } = require('electron');
-const { createApp } = require('./main');
 const path = require('path');
 
 const configFileName = 'krot.config.js';
 
-function isLive() {
-  return app && app.krot;
-}
-
-function handleResize() {
-  if (!isLive()) return;
-
-  app.renderer.resize(window.innerWidth, window.innerHeight);
-  app.view.style.width = `${window.innerWidth}px`;
-  app.view.style.height = `${window.innerHeight}px`;
-}
-
 ['save', 'saveAs', 'undo', 'redo', 'moveDown', 'moveUp', 'clone', 'destroy', 'create']
   .forEach((eventName) => {
     ipcRenderer.on(eventName, (event, data) => {
-      if (!isLive()) return;
-      app.krot[eventName](data);
+      krot[eventName](data);
     });
   });
 
 ipcRenderer.on('new', async (event, data) => {
-  isLive() && await new Promise((resolve) => app.krot.requestSave(resolve));
+  await new Promise((resolve) => krot.requestSave(resolve));
   const window = remote.getCurrentWindow();
   const options = { filters: [{ extensions: ['js'], name: '' }] };
 
@@ -35,14 +21,13 @@ ipcRenderer.on('new', async (event, data) => {
 
   if (!filePath) return;
 
-  await createApp(getConfig(filePath));
-  app.krot.new();
-  app.krot.filePath = filePath;
-  handleResize();
+  await app.load(getConfig(filePath));
+  krot.new();
+  krot.filePath = filePath;
 });
 
 ipcRenderer.on('open', async (event, data) => {
-  isLive() && await new Promise((resolve) => app.krot.requestSave(resolve));
+  await new Promise((resolve) => krot.requestSave(resolve));
   const window = remote.getCurrentWindow();
   const options = { filters: [{ extensions: ['js'], name: '' }] };
 
@@ -52,35 +37,26 @@ ipcRenderer.on('open', async (event, data) => {
 
   if (!filePath) return;
 
-  await createApp(getConfig(filePath));
+  await app.load(getConfig(filePath));
 
   try {
-    app.krot.open(filePath);
+    krot.open(filePath);
   } catch (e) {
     console.log(e);
     alert('Wrong file format');
   }
-
-  handleResize();
 });
 
-window.addEventListener('blur', () => {
-  if (!isLive()) return;
-  app.krot.snapshot();
-}, true);
-
 window.addEventListener('click', (e) => {
-  if (!isLive()) return;
-
   const classes = ['function', 'slider'];
 
   if (e.target.type === 'checkbox' || classes.find(name => e.target.classList.contains(name))) {
-    app.krot.snapshot();
+    krot.snapshot();
   }
 }, true);
 
 window.onbeforeunload = (e) => {
-  if (!isLive()) return;
+  if (!krot.hasChanges()) return;
   window.onbeforeunload = () => void 0;
 
   e.returnValue = false;
@@ -92,7 +68,7 @@ window.onbeforeunload = (e) => {
 
   remote.dialog.showMessageBox(remote.getCurrentWindow(), options, (response) => {
     const close = () => remote.getCurrentWindow().close();
-    response === 0 ? app.krot.save(close) : close();
+    response === 0 ? krot.save(close) : close();
   });
 };
 
@@ -102,7 +78,7 @@ function getConfig(filePath) {
 
   while (pathArray.length) {
     try {
-      config = require(`${pathArray.join('/')}/${configFileName}`)(PIXI);
+      config = require(`${pathArray.join('/')}/${configFileName}`)();
       break;
     } catch (e) {
       // noop
@@ -128,5 +104,3 @@ function getConfig(filePath) {
 
   return config;
 }
-
-window.addEventListener('resize', handleResize);

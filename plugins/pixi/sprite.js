@@ -1,8 +1,6 @@
 const { floatPrecision, getNameField, getClassField, getParentField, debugPosition } = require('./common');
 
 module.exports = {
-  Create: (PIXI) => new PIXI.Sprite(),
-
   getFields: (object) => {
     return [
       getNameField(object),
@@ -28,11 +26,11 @@ module.exports = {
         descriptor: {
           set: (v) => {
             object.texture = new PIXI.Texture.from(v);
-            app.krot.controller.gui.updateDisplay();
+            krot.controller.gui.updateDisplay();
           },
 
           get: () => {
-            return object.texture.textureCacheIds[0];
+            return object.texture.textureCacheIds[0] || '';
           },
         },
       },

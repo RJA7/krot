@@ -1,59 +1,42 @@
-const path = require('path');
-const configMap = require(path.resolve(process.cwd(), 'js'));
-const { populate, init } = require('../../krot-pixi');
 const { Controller } = require('./Controller');
 const { makeUniqueName } = require('./utils');
 const { defaultRaw } = require('./config');
 const { template } = require('./template');
 const { History } = require('./History');
 const { remote } = require('electron');
-const { View } = require('./view');
 const { GUI } = require('dat.gui');
-const PIXI = require('pixi.js');
+const path = require('path');
 const _ = require('lodash');
 const fs = require('fs');
 
-init(PIXI);
-
 class Krot {
   constructor() {
-    const view = new View();
     const gui = new GUI();
 
     this.treeGui = gui.addFolder('Tree');
-    this.view = view;
     this.gui = gui;
     this.history = new History();
     this.controller = null;
     this.hash = {};
     this.classesHash = {};
     this.filePath = '';
-
-    app.ticker.add(() => {
-      this.view.debugGraphics.clear();
-
-      if (this.controller) {
-        const config = configMap[this.controller.object.constructor.name];
-        config.debug && config.debug(this.controller.object, this.view.debugGraphics);
-      }
-    });
   }
 
   new() {
     this.setRaw(defaultRaw);
     this.filePath = '';
-    this.view.align();
     this.history.clear();
     this.history.put(this.getRaw());
+    app.align();
   }
 
   open(filePath) {
     const { raw } = require(filePath);
     this.setRaw(raw);
     this.filePath = filePath;
-    this.view.align();
     this.history.clear();
     this.history.put(this.getRaw());
+    app.align();
   }
 
   save(cb) {
@@ -93,37 +76,23 @@ class Krot {
   }
 
   moveDown() {
-    if (!this.controller || this.controller.object === this.view.tree) return;
+    if (!this.controller || this.controller.object === app.getTree()) return;
 
-    const object = this.controller.object;
-    const siblings = object.parent.children;
-    const index = siblings.indexOf(object);
-
-    if (index === -1 || index === 0) return;
-
-    siblings[index] = siblings[index - 1];
-    siblings[index - 1] = object;
+    app.moveDown(this.controller.object);
     this.refreshTreeAndHash();
     this.history.put(this.getRaw());
   }
 
   moveUp() {
-    if (!this.controller || this.controller.object === this.view.tree) return;
+    if (!this.controller || this.controller.object === app.getTree()) return;
 
-    const object = this.controller.object;
-    const siblings = object.parent.children;
-    const index = siblings.indexOf(object);
-
-    if (index === -1 || index === siblings.length - 1) return;
-
-    siblings[index] = siblings[index + 1];
-    siblings[index + 1] = object;
+    app.moveUp(this.controller.object);
     this.refreshTreeAndHash();
     this.history.put(this.getRaw());
   }
 
   clone() {
-    if (!this.controller || this.controller.object === this.view.tree) return;
+    if (!this.controller || this.controller.object === app.getTree()) return;
 
     const raw = this.getRaw();
     const stack = [this.controller.object];
@@ -158,7 +127,7 @@ class Krot {
   }
 
   destroy() {
-    if (!this.controller || this.controller.object === this.view.tree) return;
+    if (!this.controller || this.controller.object === app.getTree()) return;
 
     this.controller.object.destroy();
     this.controller.destroy();
@@ -168,8 +137,7 @@ class Krot {
   }
 
   create(typeName) {
-    const config = configMap[typeName];
-    const object = config.Create(PIXI);
+    const object = app.clientModule.handlerMap[typeName]();
     object.raw = {};
 
     object.name = makeUniqueName(
@@ -178,11 +146,11 @@ class Krot {
     );
 
     if (this.controller) {
-      this.controller.object.addChild(object);
+      app.add(object, this.controller.object);
       this.controller.destroy();
       this.controller = null;
     } else {
-      this.view.tree.addChild(object);
+      app.add(object);
     }
 
     this.refreshTreeAndHash();
@@ -190,17 +158,22 @@ class Krot {
   }
 
   requestSave(cb) {
-    confirm('Save current file?') ? this.save(cb) : cb();
+    this.hasChanges() && confirm('Save current file?') ? this.save(cb) : cb();
+  }
+
+  hasChanges() {
+    return this.filePath; // && ... TODO
   }
 
   setRaw(raw) {
     const layout = {};
-    populate(layout, raw);
+    app.clientModule.populate(layout, raw);
     raw.list.forEach((item) => layout[item.name].raw = raw);
-    this.view.setTree(layout[raw.list[0].name]);
+    app.setTree(layout[raw.list[0].name]);
 
     this.refreshTreeAndHash();
     this.controller && this.controller.destroy();
+    this.controller = null;
   }
 
   getRaw() {
@@ -208,7 +181,7 @@ class Krot {
       list: [],
     };
 
-    const stack = [this.view.tree];
+    const stack = [app.getTree()];
 
     while (stack.length) {
       const object = stack.shift();
@@ -220,7 +193,7 @@ class Krot {
   }
 
   snapshot() {
-    this.history.putIfChanged(this.getRaw());
+    this.filePath && this.history.putIfChanged(this.getRaw());
   }
 
   refreshTreeAndHash() {
@@ -251,22 +224,23 @@ class Krot {
       object.children.forEach(child => traverse(child, `⠀${prefix}`));
     };
 
-    traverse(this.view.tree, '');
+    traverse(app.getTree(), '');
 
-    if (this.controller) {
-      const object = this.controller.object;
+    if (this.controller && !this.hash[this.controller.object.raw.name]) {
       this.controller.destroy();
-      this.controller = new Controller(object);
+      this.controller = null;
     }
   }
 
   getSaveObject(object) {
-    const config = configMap[object.constructor.name];
+    const config = require(path.resolve(process.cwd(), 'plugins/config.json'));
+    const objects = require(path.resolve(process.cwd(), `plugins/${config.plugin}/objects`));
+    const settings = objects[object.constructor.name];
 
-    return config.getFields(object).reduce((acc, config) => {
+    return settings.getFields(object).reduce((acc, config) => {
       _.set(acc, config.prop, config.descriptor ? config.descriptor.get() : _.get(object, config.prop));
       return acc;
-    }, { Create: config.Create });
+    }, { type: object.constructor.name });
   }
 }
 

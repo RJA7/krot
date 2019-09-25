@@ -2,12 +2,12 @@ const electron = require('electron');
 const { app, BrowserWindow, Menu } = electron;
 const path = require('path');
 const url = require('url');
-const configMap = require(path.resolve(process.cwd(), 'js'));
-const debug = require(path.resolve(process.cwd(), 'js/common'));
 
 let mainWindow;
 
 const createWindow = () => {
+  const config = require(path.resolve(process.cwd(), 'plugins/config.json'));
+  const objects = require(path.resolve(process.cwd(), `plugins/${config.plugin}/objects`));
   mainWindow = new BrowserWindow();
   mainWindow.maximize();
 
@@ -106,7 +106,7 @@ const createWindow = () => {
 
     {
       label: 'Object',
-      submenu: Object.keys(configMap).map((key) => {
+      submenu: Object.keys(objects).map((key) => {
         return {
           label: key,
           click: () => {
@@ -115,12 +115,17 @@ const createWindow = () => {
         };
       }),
     },
+
+    {
+      label: 'Dev tools',
+      role: 'toggledevtools',
+    },
   ];
 
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
 
-  debug && mainWindow.webContents.openDevTools();
+  config.debug && mainWindow.webContents.openDevTools();
 };
 
 

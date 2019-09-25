@@ -4,7 +4,15 @@ const init = (Library) => PIXI = Library;
 
 const containsLetter = (text) => /[A-Za-z]/.test(text);
 
+const canvas = document.createElement('canvas');
+
 const handlerMap = {
+  Container: () => new PIXI.Container(),
+  Sprite: () => new PIXI.Sprite(),
+  Text: () => new PIXI.Text(''),
+  Graphics: () => new PIXI.Graphics(),
+  NineSlicePlane: () => new PIXI.NineSlicePlane(PIXI.Texture.from(canvas)),
+
   class: (layout, item, object) => {
     const classNames = item.class.split(/\s+/).filter(v => v);
 
@@ -57,7 +65,7 @@ const populate = (layout, raw, filter = {}) => {
     ) continue;
 
     const props = Object.keys(item);
-    const object = item.Create(PIXI);
+    const object = handlerMap[item.type]();
 
     layout[name] = object;
 

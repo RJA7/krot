@@ -1,15 +1,16 @@
 const _ = require('lodash');
 const path = require('path');
 const { GUI } = require('dat.gui');
-const configMap = require(path.resolve(process.cwd(), 'js'));
 
 class Controller {
   constructor(object) {
-    const config = configMap[object.constructor.name];
+    const config = require(path.resolve(process.cwd(), 'plugins/config.json'));
+    const objects = require(path.resolve(process.cwd(), `plugins/${config.plugin}/objects`));
+    this.settings = objects[object.constructor.name];
     this.gui = new GUI();
     this.object = object;
 
-    config.getFields(object).forEach((field) => {
+    this.settings.getFields(object).forEach((field) => {
       const descriptor = field.descriptor || {
         set: (value) => {
           _.set(object, field.prop, value);
@@ -30,6 +31,10 @@ class Controller {
 
   destroy() {
     this.gui.destroy();
+  }
+
+  debug(debugGraphics) {
+    this.settings.debug && this.settings.debug(this.object, debugGraphics);
   }
 }
 

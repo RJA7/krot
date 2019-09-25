@@ -4,9 +4,9 @@ const getNameField = (object) => ({
   prop: 'name',
   descriptor: {
     set: (value) => {
-      if (!value || app.krot.hash[value] || app.krot.classesHash[value]) return;
+      if (!value || krot.hash[value] || krot.classesHash[value]) return;
       object.name = value;
-      app.krot.refreshTreeAndHash();
+      krot.refreshTreeAndHash();
     },
     get: () => object.name,
   },
@@ -23,7 +23,7 @@ const getClassField = (object) => ({
 const getParentField = (object) => ({
   prop: 'parent',
   list: (() => {
-    const hash = Object.assign({}, app.krot.hash);
+    const hash = Object.assign({}, krot.hash);
 
     const filter = (object) => {
       delete hash[object.name];
@@ -35,9 +35,9 @@ const getParentField = (object) => ({
   })(),
   descriptor: {
     set: (value) => {
-      const parent = app.krot.hash[value];
+      const parent = krot.hash[value];
       parent.addChild(object);
-      app.krot.refreshTreeAndHash();
+      krot.refreshTreeAndHash();
     },
     get: () => object.parent.name || '',
   },
@@ -45,12 +45,11 @@ const getParentField = (object) => ({
 
 const debugPosition = (object, graphics) => {
   const position = graphics.toLocal(object, object.parent);
-  graphics.beginFill(0x000000, 1);
+  graphics.beginFill(0xA9B7C6, 1);
   graphics.drawCircle(position.x, position.y, 4);
 };
 
 module.exports = {
-  debug: true,
   floatPrecision,
   getNameField,
   getClassField,

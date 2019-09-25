@@ -1,73 +1,10 @@
-const WebFont = require('webfontloader');
-const Krot = require('./Krot');
-const PIXI = require('pixi.js');
 const path = require('path');
-const fs = require('fs');
+const config = require(path.resolve(process.cwd(), 'plugins/config.json'));
+const App = require(path.resolve(process.cwd(), `plugins/${config.plugin}/App`));
+const Krot = require('./Krot');
 
-window.app = null;
-window.PIXI = PIXI;
-
-const createApp = async (config) => {
-  if (app) {
-    document.body.removeChild(app.view);
-    PIXI.Loader.shared.reset();
-    app.destroy();
-    app.krot.gui.destroy();
-    app.krot.controller && app.krot.controller.destroy();
-  }
-
-  window.app = new PIXI.Application();
-  app.renderer.backgroundColor = 0x888888;
-  app.fonts = [];
-  document.body.appendChild(app.view);
-
-  const promises = [];
-  const loader = PIXI.Loader.shared;
-
-  config.imagesDirs.forEach((dir) => {
-    fs.readdirSync(dir).forEach((fileName) => {
-      loader.add(fileName.split('.').shift(), `${dir}${path.sep}${fileName}`);
-    });
-  });
-
-  config.atlasesDirs.forEach((dir) => {
-    fs.readdirSync(dir).forEach((fileName) => {
-      if (!fileName.endsWith('.json')) return;
-      loader.add(fileName.split('.').shift(), `${dir}${path.sep}${fileName}`);
-    });
-  });
-
-  config.fontsDirs.forEach((dir) => {
-    fs.readdirSync(dir).forEach((fileName) => {
-      const [name] = fileName.split('.');
-      const fontFace = new FontFace(name, `url(${dir}${path.sep}${fileName})`.replace(/\\/g, '/'));
-
-      promises.push(
-        fontFace.load().then((loadedFace) => {
-          document.fonts.add(loadedFace);
-          app.fonts.push(name);
-        }),
-      );
-    });
-  });
-
-  config.googleFonts.length && promises.push(new Promise(resolve => {
-    WebFont.load({
-      active: resolve,
-      inactive: resolve,
-      google: {
-        families: config.googleFonts,
-      },
-    });
-  }));
-
-  app.fonts.push(...config.standardFonts, ...config.googleFonts);
-  promises.push(new Promise(resolve => loader.load(resolve)));
-
-  await Promise.all(promises);
-
-  app.krot = new Krot();
-};
-
-module.exports = { createApp };
+window.app = new App();
+window.krot = new Krot();
 require('./events');
+
+window.addEventListener('resize', () => app.handleResize());

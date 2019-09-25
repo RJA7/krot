@@ -6,33 +6,11 @@ class History {
       pointer: -1,
       list: [],
     };
-
-    this.init();
-  }
-
-  init() {
-    let data;
-
-    try {
-      data = JSON.parse(localStorage.getItem('data'));
-    } catch (e) {
-      // noop
-    }
-
-    if (data && 'pointer' in data && data.list && data.list.length) {
-      this.data = data;
-    } else {
-      this.clear();
-    }
   }
 
   clear() {
     this.data.pointer = 0;
     this.data.list = [defaultRaw];
-  }
-
-  save() {
-    localStorage.setItem('data', JSON.stringify(this.data));
   }
 
   isChanged(raw) {

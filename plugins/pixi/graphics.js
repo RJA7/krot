@@ -1,8 +1,6 @@
 const { floatPrecision, getNameField, getClassField, getParentField, debugPosition } = require('./common');
 
 module.exports = {
-  Create: (PIXI) => new PIXI.Graphics(),
-
   getFields: (object) => {
     const redraw = () => {
       const overlay = object.raw.overlay;

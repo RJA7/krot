@@ -1,8 +1,6 @@
 const { floatPrecision, getNameField, getClassField, getParentField, debugPosition } = require('./common');
 
 module.exports = {
-  Create: (PIXI) => new PIXI.Text(),
-
   getFields: (object) => {
     return [
       getNameField(object),
@@ -18,7 +16,6 @@ module.exports = {
       { prop: 'angle', step: floatPrecision },
       { prop: 'alpha', min: 0, max: 1, step: floatPrecision },
       { prop: 'visible' },
-      { prop: 'tint', color: true },
       { prop: 'blendMode', list: PIXI.BLEND_MODES },
       { prop: 'interactive' },
       { prop: 'buttonMode' },
@@ -52,7 +49,7 @@ module.exports = {
       { prop: 'style.dropShadowAlpha', name: 'shadowAlpha', min: 0, max: 1, step: floatPrecision },
       { prop: 'style.dropShadowAngle', name: 'shadowAngle', step: floatPrecision },
       { prop: 'style.dropShadowBlur', name: 'shadowBlur', step: 1 },
-      { prop: 'style.dropShadowColor', name: 'shadowColor', color: true },
+      { prop: 'style.dropShadowColor', name: 'shadowColor' },
       { prop: 'style.dropShadowDistance', name: 'shadowDistance', step: 1 },
       { prop: 'style.leading', name: 'leading', step: 1 },
       { prop: 'style.lineJoin', name: 'lineJoin', list: ['miter', 'round', 'bevel'] },
@@ -77,7 +74,7 @@ module.exports = {
     const rb = graphics.toLocal(new PIXI.Point(localRB.x, localRB.y), object);
     const lb = graphics.toLocal(new PIXI.Point(localLT.x, localRB.y), object);
 
-    graphics.lineStyle(1, 0x000000, 1);
+    graphics.lineStyle(1, 0xA9B7C6, 1);
     graphics.moveTo(lb.x, lb.y);
     [lt, rt, rb, lb].forEach((pos) => graphics.lineTo(pos.x, pos.y));
 

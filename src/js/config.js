@@ -3,7 +3,7 @@ const defaultRaw = {
   height: 960,
   list: [
     {
-      Create: (PIXI) => new PIXI.Container(),
+      type: 'Container',
       name: 'root',
       class: '',
     },
