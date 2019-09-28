@@ -51,6 +51,7 @@ class App extends PIXI.Application {
     const loader = PIXI.Loader.shared;
     PIXI.utils.destroyTextureCache();
     loader.reset();
+    loader.defaultQueryString = String(Date.now());
 
     if (krot.controller) {
       krot.controller.destroy();

@@ -21,7 +21,7 @@ ipcRenderer.on('new', async (event, data) => {
 
   if (!filePath) return;
 
-  await app.load(getConfig(filePath));
+  await load(filePath);
   krot.new();
   krot.filePath = filePath;
 });
@@ -37,7 +37,7 @@ ipcRenderer.on('open', async (event, data) => {
 
   if (!filePath) return;
 
-  await app.load(getConfig(filePath));
+  await load(filePath);
 
   try {
     krot.open(filePath);
@@ -103,4 +103,10 @@ function getConfig(filePath) {
   });
 
   return config;
+}
+
+async function load(filePath) {
+  const config = getConfig(filePath);
+  watcher.watch(config);
+  await app.load(config);
 }

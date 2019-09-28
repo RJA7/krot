@@ -155,6 +155,7 @@ class Krot {
 
     this.refreshTreeAndHash();
     this.controller = new Controller(object);
+    this.history.put(this.getRaw());
   }
 
   requestSave(cb) {
@@ -162,7 +163,14 @@ class Krot {
   }
 
   hasChanges() {
-    return this.filePath; // && ... TODO
+    try {
+      const { raw } = require(this.filePath);
+      return JSON.stringify(this.getRaw()) !== JSON.stringify(raw);
+    } catch (e) {
+      //
+    }
+
+    return false;
   }
 
   setRaw(raw) {

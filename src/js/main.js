@@ -1,8 +1,10 @@
+const { Watcher } = require('./Watcher');
 const path = require('path');
 const config = require(path.resolve(process.cwd(), 'plugins/config.json'));
 const App = require(path.resolve(process.cwd(), `plugins/${config.plugin}/App`));
 const Krot = require('./Krot');
 
+window.watcher = new Watcher();
 window.app = new App();
 window.krot = new Krot();
 require('./events');
