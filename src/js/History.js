@@ -1,5 +1,3 @@
-const { defaultRaw } = require('./config');
-
 class History {
   constructor() {
     this.data = {
@@ -9,8 +7,8 @@ class History {
   }
 
   clear() {
-    this.data.pointer = 0;
-    this.data.list = [defaultRaw];
+    this.data.pointer = -1;
+    this.data.list = [];
   }
 
   isChanged(raw) {
