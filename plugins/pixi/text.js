@@ -11,8 +11,6 @@ module.exports = {
       { prop: 'anchor.y', step: floatPrecision },
       { prop: 'scale.x', step: floatPrecision },
       { prop: 'scale.y', step: floatPrecision },
-      { prop: 'width', step: 1 },
-      { prop: 'height', step: 1 },
       { prop: 'angle', step: floatPrecision },
       { prop: 'alpha', min: 0, max: 1, step: floatPrecision },
       { prop: 'visible' },

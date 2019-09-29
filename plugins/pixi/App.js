@@ -151,6 +151,10 @@ class App extends PIXI.Application {
     siblings[index] = siblings[index + 1];
     siblings[index + 1] = object;
   }
+
+  getLibrary() {
+    return PIXI;
+  }
 }
 
 module.exports = App;
