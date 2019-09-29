@@ -78,7 +78,7 @@ function getConfig(filePath) {
 
   while (pathArray.length) {
     try {
-      config = require(`${pathArray.join('/')}/${configFileName}`)(app.getLibrary());
+      config = require(`${pathArray.join('/')}/${configFileName}`)(app);
       break;
     } catch (e) {
       // noop

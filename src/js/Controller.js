@@ -4,9 +4,7 @@ const { GUI } = require('dat.gui');
 
 class Controller {
   constructor(object) {
-    const config = require(path.resolve(process.cwd(), 'plugins/config.json'));
-    const objects = require(path.resolve(process.cwd(), `plugins/${config.plugin}/objects`));
-    this.settings = objects[object.constructor.name];
+    this.settings = app.getObjects()[object.constructor.name];
     this.gui = new GUI();
     this.object = object;
 

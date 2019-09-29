@@ -155,6 +155,10 @@ class App extends PIXI.Application {
   getLibrary() {
     return PIXI;
   }
+
+  getObjects() {
+    return require('./objects');
+  }
 }
 
 module.exports = App;

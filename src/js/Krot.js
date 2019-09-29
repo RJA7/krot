@@ -241,9 +241,7 @@ class Krot {
   }
 
   getSaveObject(object) {
-    const config = require(path.resolve(process.cwd(), 'plugins/config.json'));
-    const objects = require(path.resolve(process.cwd(), `plugins/${config.plugin}/objects`));
-    const settings = objects[object.constructor.name];
+    const settings = app.getObjects()[object.constructor.name];
 
     return settings.getFields(object).reduce((acc, config) => {
       _.set(acc, config.prop, config.descriptor ? config.descriptor.get() : _.get(object, config.prop));

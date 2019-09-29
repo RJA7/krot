@@ -47,6 +47,7 @@ const debugPosition = (object, graphics) => {
   const position = graphics.toLocal(object, object.parent);
   graphics.beginFill(0xA9B7C6, 1);
   graphics.drawCircle(position.x, position.y, 4);
+  graphics.endFill();
 };
 
 module.exports = {
