@@ -4,7 +4,7 @@ const { GUI } = require('dat.gui');
 
 class Controller {
   constructor(object) {
-    this.settings = app.getObjects()[object.constructor.name];
+    this.settings = krot.config.controllers[object.constructor.name];
     this.gui = new GUI();
     this.object = object;
 

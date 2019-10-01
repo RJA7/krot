@@ -13,14 +13,6 @@ const handlerMap = {
   Graphics: () => new PIXI.Graphics(),
   NineSlicePlane: () => new PIXI.NineSlicePlane(PIXI.Texture.from(canvas)),
 
-  class: (layout, item, object) => {
-    const classNames = item.class.split(/\s+/).filter(v => v);
-
-    for (let j = 0, kLen = classNames.length; j < kLen; j++) {
-      layout[classNames[j]].push(object);
-    }
-  },
-
   parent: (layout, item, object) => {
     const parent = layout[item.parent];
     parent && parent.addChild(object);
@@ -51,16 +43,9 @@ const populate = (layout, raw, filter = {}) => {
   for (let i = 0, iLen = list.length; i < iLen; i++) {
     const item = list[i];
     const name = item.name;
-    const classNames = item.class.split(/\s+/).filter(v => v);
-
-    for (let j = 0, kLen = classNames.length; j < kLen; j++) {
-      const className = classNames[j];
-      layout[className] = layout[className] || [];
-    }
 
     if (
       filter[name] ||
-      classNames.find(className => filter[className]) ||
       (item.parent && !layout[item.parent])
     ) continue;
 

@@ -18,8 +18,8 @@ class Krot {
     this.history = new History();
     this.controller = null;
     this.hash = {};
-    this.classesHash = {};
     this.filePath = '';
+    this.config = null; // Client app config
   }
 
   new() {
@@ -46,8 +46,7 @@ class Krot {
 
     const data = this.getRaw();
     const fields = data.list.map(raw => raw.name);
-    const classFields = Object.keys(this.classesHash);
-    const file = template({ data, fields, classFields });
+    const file = template({ data, fields });
 
     fs.writeFile(this.filePath, file, () => cb && cb());
   }
@@ -137,7 +136,7 @@ class Krot {
   }
 
   create(typeName) {
-    const object = app.clientModule.handlerMap[typeName]();
+    const object = app.getClientModule().handlerMap[typeName]();
     object.raw = {};
 
     object.name = makeUniqueName(
@@ -175,7 +174,7 @@ class Krot {
 
   setRaw(raw) {
     const layout = {};
-    app.clientModule.populate(layout, raw);
+    app.getClientModule().populate(layout, raw);
     raw.list.forEach((item) => layout[item.name].raw = raw);
     app.setTree(layout[raw.list[0].name]);
 
@@ -210,17 +209,11 @@ class Krot {
     this.treeGui.domElement.classList.add('full-width-property');
     this.treeGui.open();
     this.hash = {};
-    this.classesHash = {};
 
     const traverse = (object, prefix) => {
       object.raw = this.getSaveObject(object);
       this.hash[object.raw.name] = object;
       const name = `${prefix}${object.name}`;
-
-      object.raw.class.split(/\s+/).filter(v => v).forEach((className) => {
-        this.classesHash[className] = this.classesHash[className] || [];
-        this.classesHash[className].push(object);
-      });
 
       this.treeGui.add({
         [name]: () => {
@@ -241,7 +234,7 @@ class Krot {
   }
 
   getSaveObject(object) {
-    const settings = app.getObjects()[object.constructor.name];
+    const settings = this.config.controllers[object.constructor.name];
 
     return settings.getFields(object).reduce((acc, config) => {
       _.set(acc, config.prop, config.descriptor ? config.descriptor.get() : _.get(object, config.prop));

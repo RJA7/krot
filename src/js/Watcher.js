@@ -9,22 +9,25 @@ class Watcher {
   watch(config) {
     this.clear();
 
-    Object.values(config).forEach((dirs) => {
-      dirs.forEach((dir) => {
-        fs.readdir(dir, (err, fileNames) => {
-          if (err) {
-            console.log(err);
-            return;
-          }
+    Object.keys(config)
+      .filter((key) => key.endsWith('Dirs'))
+      .map((key) => config[key])
+      .forEach((dirs) => {
+        dirs.forEach((dir) => {
+          fs.readdir(dir, (err, fileNames) => {
+            if (err) {
+              console.log(err);
+              return;
+            }
 
-          fileNames.forEach((fileName) => {
-            const watcher = fs.watch(`${dir}/${fileName}`);
-            watcher.on('change', () => this.scheduleReload(config));
-            this.watchers.push(watcher);
+            fileNames.forEach((fileName) => {
+              const watcher = fs.watch(`${dir}/${fileName}`);
+              watcher.on('change', () => this.scheduleReload(config));
+              this.watchers.push(watcher);
+            });
           });
         });
       });
-    });
   }
 
   scheduleReload(config) {

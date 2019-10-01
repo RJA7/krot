@@ -1,4 +1,3 @@
 {
-  "plugin": "pixi",
-  "debug": false
+  "plugin": "pixi"
 }

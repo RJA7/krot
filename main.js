@@ -6,8 +6,6 @@ const url = require('url');
 let mainWindow;
 
 const createWindow = () => {
-  const config = require(path.resolve(process.cwd(), 'plugins/config.json'));
-  const objects = require(path.resolve(process.cwd(), `plugins/${config.plugin}/objects`));
   mainWindow = new BrowserWindow();
   mainWindow.maximize();
 
@@ -18,114 +16,7 @@ const createWindow = () => {
   }));
 
   mainWindow.on('closed', () => mainWindow = null);
-
-  const template = [
-    {
-      label: 'File',
-      submenu: [
-        {
-          label: 'New',
-          accelerator: 'CmdOrCtrl + N',
-          click: () => {
-            mainWindow.webContents.send('new');
-          },
-        },
-        {
-          label: 'Open',
-          accelerator: 'CmdOrCtrl + O',
-          click: () => {
-            mainWindow.webContents.send('open');
-          },
-        },
-        {
-          label: 'Save',
-          accelerator: 'CmdOrCtrl + S',
-          click: () => {
-            mainWindow.webContents.send('save');
-          },
-        },
-        {
-          label: 'Save as',
-          accelerator: 'CmdOrCtrl + Shift + S',
-          click: () => {
-            mainWindow.webContents.send('saveAs');
-          },
-        },
-        { type: 'separator' },
-        { role: 'quit' },
-      ],
-    },
-
-    {
-      label: 'Edit',
-      submenu: [
-        {
-          label: 'Undo',
-          accelerator: 'CmdOrCtrl + Z',
-          click: () => {
-            mainWindow.webContents.send('undo');
-          },
-        },
-        {
-          label: 'Redo',
-          accelerator: 'CmdOrCtrl + Shift + Z',
-          click: () => {
-            mainWindow.webContents.send('redo');
-          },
-        },
-        { type: 'separator' },
-        {
-          label: 'Move down',
-          accelerator: 'CmdOrCtrl + D',
-          click: () => {
-            mainWindow.webContents.send('moveDown');
-          },
-        },
-        {
-          label: 'Move up',
-          accelerator: 'CmdOrCtrl + Shift + D',
-          click: () => {
-            mainWindow.webContents.send('moveUp');
-          },
-        },
-        { type: 'separator' },
-        {
-          label: 'Clone',
-          click: () => {
-            mainWindow.webContents.send('clone');
-          },
-        },
-        {
-          label: 'Destroy',
-          click: () => {
-            mainWindow.webContents.send('destroy');
-          },
-        },
-      ],
-    },
-
-    {
-      label: 'Object',
-      submenu: Object.keys(objects).map((key) => {
-        return {
-          label: key,
-          click: () => {
-            mainWindow.webContents.send('create', key);
-          },
-        };
-      }),
-    },
-
-    {
-      label: 'Dev tools',
-      role: 'toggledevtools',
-    },
-  ];
-
-  const menu = Menu.buildFromTemplate(template);
-  Menu.setApplicationMenu(menu);
-
-  config.debug && mainWindow.webContents.openDevTools();
+  Menu.setApplicationMenu(null);
 };
 
 

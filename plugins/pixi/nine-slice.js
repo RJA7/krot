@@ -1,10 +1,9 @@
-const { floatPrecision, getNameField, getClassField, getParentField, debugPosition } = require('./common');
+const { floatPrecision, getNameField, getParentField, debugPosition } = require('./common');
 
 module.exports = {
   getFields: (object) => {
     return [
       getNameField(object),
-      getClassField(object),
       { prop: 'x', step: 1 },
       { prop: 'y', step: 1 },
       { prop: 'scale.x', step: floatPrecision },

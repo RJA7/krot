@@ -1,6 +1,13 @@
 ## krot-pixi
+##
+##### This is client library, which allows *KROT* layouts be integrated into your game.
 
-This module allows your PIXI 5 application to create layouts generate by KROT editor
+* KROT is a program, where you can visually create and edit PIXI layouts.
+
+
+##
+##### Contact
+* roman.kopanskyi@gmail.com
 
 ### How to use
 #### Somewhere in main flow
@@ -18,16 +25,11 @@ const MyLayout = require('./my-layout');
 new MyLayout();
 </pre>
 
-All the objects are accessible by name.
-
-You can also specify class for some objects, they will be put in arrays.
-Make sure all the names and class names are unique in single layout.
+All the objects are accessible by name so they should be unique for single layout.
 
 #### Example
 <pre>
 const ui = new MyLayout();
 
 ui.someName.x = 0;
-
-ui.someClassName.forEach(object => object.x = 0);
 </pre>

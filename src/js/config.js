@@ -5,7 +5,6 @@ const defaultRaw = {
     {
       type: 'Container',
       name: 'root',
-      class: '',
     },
   ],
 };

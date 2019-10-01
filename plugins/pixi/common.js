@@ -4,19 +4,11 @@ const getNameField = (object) => ({
   prop: 'name',
   descriptor: {
     set: (value) => {
-      if (!value || krot.hash[value] || krot.classesHash[value]) return;
+      if (!value || krot.hash[value]) return;
       object.name = value;
       krot.refreshTreeAndHash();
     },
     get: () => object.name,
-  },
-});
-
-const getClassField = (object) => ({
-  prop: 'class',
-  descriptor: {
-    set: (value) => object.raw.class = value,
-    get: () => object.raw.class || '',
   },
 });
 
@@ -53,7 +45,6 @@ const debugPosition = (object, graphics) => {
 module.exports = {
   floatPrecision,
   getNameField,
-  getClassField,
   getParentField,
   debugPosition,
 };

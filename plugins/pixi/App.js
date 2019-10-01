@@ -5,14 +5,14 @@ const fs = require('fs');
 const PIXI = require('pixi.js');
 
 window.PIXI = PIXI;
+clientModule.init(PIXI);
 
 class App extends PIXI.Application {
   constructor() {
     super();
 
     document.body.appendChild(this.view);
-    clientModule.init(PIXI);
-    this.clientModule = clientModule;
+
     this.renderer.backgroundColor = 0x2B2B2B;
     this.fonts = [];
     this.ground = new PIXI.Container();
@@ -118,8 +118,8 @@ class App extends PIXI.Application {
 
   align() {
     this.ground.scale.set(1);
-    this.ground.x = window.innerWidth / 2;
-    this.ground.y = window.innerHeight / 2;
+    this.ground.x = (window.innerWidth - this.tree.width) / 2;
+    this.ground.y = (window.innerHeight - this.tree.height) / 2;
   }
 
   handleResize() {
@@ -156,8 +156,12 @@ class App extends PIXI.Application {
     return PIXI;
   }
 
-  getObjects() {
-    return require('./objects');
+  getStandardControllers() {
+    return require('./controllers');
+  }
+
+  getClientModule() {
+    return require('krot-pixi');
   }
 }
 
