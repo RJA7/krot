@@ -1,5 +1,12 @@
-const { remote } = require('electron');
-const { Watcher } = require('./Watcher');
+const defineProperty = Object.defineProperty;
+
+Object.defineProperty = function (object, prop, descriptor) {
+  descriptor.configurable = true;
+  defineProperty.call(Object, object, prop, descriptor);
+};
+
+const {remote} = require('electron');
+const {Watcher} = require('./Watcher');
 const path = require('path');
 const config = require(path.resolve(process.cwd(), 'plugins/config.json'));
 const App = require(path.resolve(process.cwd(), `plugins/${config.plugin}/App`));

@@ -1,17 +1,20 @@
-const { Controller } = require('./Controller');
-const { makeUniqueName } = require('./utils');
-const { defaultRaw } = require('./config');
-const { template } = require('./template');
-const { History } = require('./History');
-const { remote } = require('electron');
-const { GUI } = require('dat.gui');
-const path = require('path');
+const {Controller} = require('./Controller');
+const {makeUniqueName} = require('./utils');
+const {defaultRaw} = require('./config');
+const {jsTemplate, tsTemplate} = require('./template');
+const {History} = require('./History');
+const {remote} = require('electron');
+const {GUI} = require('dat.gui');
 const _ = require('lodash');
 const fs = require('fs');
 
 class Krot {
   constructor() {
     const gui = new GUI();
+
+    this.makeUniqueName = makeUniqueName;
+    this.Controller = Controller;
+    this.token = '/* |raw| */';
 
     this.treeGui = gui.addFolder('Tree');
     this.gui = gui;
@@ -31,7 +34,8 @@ class Krot {
   }
 
   open(filePath) {
-    const { raw } = require(filePath);
+    const file = fs.readFileSync(filePath, 'utf-8');
+    const raw = eval(`(${file.split(this.token)[1]})`);
     this.setRaw(raw);
     this.filePath = filePath;
     this.history.clear();
@@ -46,17 +50,18 @@ class Krot {
 
     const data = this.getRaw();
     const fields = data.list.map(raw => raw.name);
-    const file = template({ data, fields });
+    const template = this.filePath.endsWith('.js') ? jsTemplate : tsTemplate;
+    const file = template({data, fields, hash: this.hash});
 
     fs.writeFile(this.filePath, file, () => cb && cb());
   }
 
   saveAs(cb) {
     remote.dialog.showSaveDialog(remote.getCurrentWindow(), {
-      filters: [{
-        extensions: ['js'],
-        name: '',
-      }],
+      filters: [
+        {extensions: ['ts'], name: ''},
+        {extensions: ['js'], name: ''},
+      ],
     }, (filePath) => {
       if (!filePath) return;
       this.filePath = filePath;
@@ -163,7 +168,7 @@ class Krot {
 
   hasChanges() {
     try {
-      const { raw } = require(this.filePath);
+      const {raw} = require(this.filePath);
       return JSON.stringify(this.getRaw()) !== JSON.stringify(raw);
     } catch (e) {
       //
@@ -237,9 +242,17 @@ class Krot {
     const settings = this.config.controllers[object.constructor.name];
 
     return settings.getFields(object).reduce((acc, config) => {
-      _.set(acc, config.prop, config.descriptor ? config.descriptor.get() : _.get(object, config.prop));
+      if (config.export) {
+        const exports = config.export();
+        exports && _.set(acc, config.prop, exports);
+      } else if (config.descriptor) {
+        _.set(acc, config.prop, config.descriptor.get());
+      } else {
+        _.set(acc, config.prop, _.get(object, config.prop));
+      }
+
       return acc;
-    }, { type: object.constructor.name });
+    }, {type: object.constructor.name});
   }
 }
 

@@ -13,6 +13,11 @@ class App extends PIXI.Application {
 
     document.body.appendChild(this.view);
 
+    this.typePrefix = 'PIXI.';
+    this.filePrefix = `/* tslint:disable */
+import * as PIXI from 'pixi.js';
+`;
+
     this.renderer.backgroundColor = 0x2B2B2B;
     this.fonts = [];
     this.ground = new PIXI.Container();
@@ -20,7 +25,7 @@ class App extends PIXI.Application {
     this.debugGraphics = new PIXI.Graphics();
     this.ground.addChild(this.debugGraphics);
     this.tree = null;
-    this.drag = { dx: 0, dy: 0 };
+    this.drag = {dx: 0, dy: 0};
 
     this.renderer.plugins.interaction.on('mousedown', (e) => {
       this.drag.dx = this.ground.x - e.data.global.x;
@@ -49,6 +54,7 @@ class App extends PIXI.Application {
   async load(config) {
     const promises = [];
     const loader = PIXI.Loader.shared;
+    this.tree && this.tree.destroy();
     PIXI.utils.destroyTextureCache();
     loader.reset();
     loader.defaultQueryString = String(Date.now());
@@ -150,10 +156,6 @@ class App extends PIXI.Application {
 
     siblings[index] = siblings[index + 1];
     siblings[index + 1] = object;
-  }
-
-  getLibrary() {
-    return PIXI;
   }
 
   getStandardControllers() {

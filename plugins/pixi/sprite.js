@@ -24,6 +24,7 @@ module.exports = {
         prop: 'texture',
         descriptor: {
           set: (v) => {
+            if (!PIXI.utils.TextureCache[v]) return;
             object.texture = new PIXI.Texture.from(v);
             krot.controller.gui.updateDisplay();
           },

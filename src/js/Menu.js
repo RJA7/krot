@@ -1,5 +1,5 @@
-const { remote } = require('electron');
-const { Menu } = remote;
+const {remote} = require('electron');
+const {Menu} = remote;
 const path = require('path');
 
 const configFileName = 'krot.config.js';
@@ -24,8 +24,8 @@ class MenuHandler {
               this.open();
             },
           },
-          { type: 'separator' },
-          { role: 'quit' },
+          {type: 'separator'},
+          {role: 'quit'},
         ],
       },
 
@@ -68,8 +68,8 @@ class MenuHandler {
                 krot.saveAs();
               },
             },
-            { type: 'separator' },
-            { role: 'quit' },
+            {type: 'separator'},
+            {role: 'quit'},
           ],
         },
 
@@ -90,7 +90,7 @@ class MenuHandler {
                 krot.redo();
               },
             },
-            { type: 'separator' },
+            {type: 'separator'},
             {
               label: 'Move down',
               accelerator: 'CmdOrCtrl + D',
@@ -105,7 +105,7 @@ class MenuHandler {
                 krot.moveUp();
               },
             },
-            { type: 'separator' },
+            {type: 'separator'},
             {
               label: 'Clone',
               click: () => {
@@ -147,7 +147,12 @@ class MenuHandler {
   async new() {
     await new Promise((resolve) => krot.requestSave(resolve));
     const window = remote.getCurrentWindow();
-    const options = { filters: [{ extensions: ['js'], name: '' }] };
+    const options = {
+      filters: [
+        {extensions: ['ts'], name: ''},
+        {extensions: ['js'], name: ''},
+      ],
+    };
 
     const filePath = await new Promise((resolve) => {
       remote.dialog.showSaveDialog(window, options, resolve);
@@ -163,7 +168,12 @@ class MenuHandler {
   async open() {
     await new Promise((resolve) => krot.requestSave(resolve));
     const window = remote.getCurrentWindow();
-    const options = { filters: [{ extensions: ['js'], name: '' }] };
+    const options = {
+      filters: [
+        {extensions: ['ts'], name: ''},
+        {extensions: ['js'], name: ''},
+      ],
+    };
 
     const filePath = await new Promise((resolve) => {
       remote.dialog.showOpenDialog(window, options, (filePaths) => resolve(filePaths && filePaths[0]));

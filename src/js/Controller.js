@@ -1,10 +1,12 @@
 const _ = require('lodash');
-const path = require('path');
-const { GUI } = require('dat.gui');
+const {GUI} = require('dat.gui');
 
 class Controller {
-  constructor(object) {
-    this.settings = krot.config.controllers[object.constructor.name];
+  constructor(object, config) {
+    krot.controller && krot.controller.destroy();
+    krot.controller = this;
+
+    this.settings = config || krot.config.controllers[object.constructor.name];
     this.gui = new GUI();
     this.object = object;
 
@@ -28,6 +30,7 @@ class Controller {
   }
 
   destroy() {
+    this.destroy = () => void 0;
     this.gui.destroy();
   }
 
@@ -36,4 +39,4 @@ class Controller {
   }
 }
 
-module.exports = { Controller };
+module.exports = {Controller};

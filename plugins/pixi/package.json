@@ -8,6 +8,6 @@
   "dependencies": {
     "webfontloader": "^1.6.28",
     "pixi.js": "^5.1.1",
-    "krot-pixi": "^1.0.3"
+    "krot-pixi": "^1.1.3"
   }
 }

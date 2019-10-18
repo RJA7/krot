@@ -1,6 +1,14 @@
+const textIcons = require('text-icons');
+const textExtends = require('./extends/text');
+
 let PIXI = null;
 
-const init = (Library) => PIXI = Library;
+const init = (Library) => {
+  PIXI = Library;
+
+  textIcons.extend(PIXI.Text);
+  textExtends.apply(PIXI);
+};
 
 const containsLetter = (text) => /[A-Za-z]/.test(text);
 
@@ -20,6 +28,21 @@ const handlerMap = {
 
   text: (layout, item, object) => {
     object.text = containsLetter(item.text) ? populate.localize(item.text) : item.text;
+  },
+
+  icons: (layout, item, object) => {
+    object.icons = {};
+
+    for (const key in item.icons) {
+      const icon = new PIXI.Sprite();
+      const value = item.icons[key];
+      icon.x = value.x;
+      icon.y = value.y;
+      icon.scale.x = value.scale.x;
+      icon.scale.y = value.scale.y;
+      icon.texture = PIXI.Texture.from(value.texture);
+      object.icons[key] = icon;
+    }
   },
 
   texture: (layout, item, object) => {
@@ -69,4 +92,4 @@ const populate = (layout, raw, filter = {}) => {
 
 populate.localize = (string) => string;
 
-module.exports = { init, populate, handlerMap };
+module.exports = {init, populate, handlerMap};
