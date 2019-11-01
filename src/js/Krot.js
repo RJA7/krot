@@ -56,17 +56,18 @@ class Krot {
     fs.writeFile(this.filePath, file, () => cb && cb());
   }
 
-  saveAs(cb) {
-    remote.dialog.showSaveDialog(remote.getCurrentWindow(), {
+  async saveAs(cb) {
+    const answer = await remote.dialog.showSaveDialog(remote.getCurrentWindow(), {
       filters: [
         {extensions: ['ts'], name: ''},
         {extensions: ['js'], name: ''},
       ],
-    }, (filePath) => {
-      if (!filePath) return;
-      this.filePath = filePath;
-      this.save(cb);
     });
+
+    if (!answer.filePath) return;
+
+    this.filePath = answer.filePath;
+    this.save(cb);
   }
 
   undo() {

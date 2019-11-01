@@ -15,7 +15,7 @@ const getNameField = (object) => ({
 const getParentField = (object) => ({
   prop: 'parent',
   list: (() => {
-    const hash = Object.assign({}, krot.hash);
+    const hash = {...krot.hash};
 
     const filter = (object) => {
       delete hash[object.name];

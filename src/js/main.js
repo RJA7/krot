@@ -20,14 +20,11 @@ window.krot = new Krot();
 const menu = new Menu();
 menu.set();
 
+app.handleResize();
 window.addEventListener('resize', () => app.handleResize());
 
-window.addEventListener('click', (e) => {
-  const classes = ['function', 'slider'];
-
-  if (e.target.type === 'checkbox' || classes.find(name => e.target.classList.contains(name))) {
-    krot.snapshot();
-  }
+window.addEventListener('mouseup', (e) => {
+  krot.snapshot();
 }, true);
 
 window.onbeforeunload = (e) => {
@@ -41,8 +38,9 @@ window.onbeforeunload = (e) => {
     message: 'Save current file?',
   };
 
-  remote.dialog.showMessageBox(remote.getCurrentWindow(), options, (response) => {
-    const close = () => remote.getCurrentWindow().close();
-    response === 0 ? krot.save(close) : close();
-  });
+  remote.dialog.showMessageBox(remote.getCurrentWindow(), options)
+    .then((answer) => {
+      const close = () => remote.getCurrentWindow().close();
+      answer.response === 0 ? krot.save(close) : close();
+    });
 };

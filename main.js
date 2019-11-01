@@ -1,12 +1,19 @@
+process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = '1';
+
 const electron = require('electron');
-const { app, BrowserWindow, Menu } = electron;
+const {app, BrowserWindow, Menu} = electron;
 const path = require('path');
 const url = require('url');
 
 let mainWindow;
 
 const createWindow = () => {
-  mainWindow = new BrowserWindow();
+  mainWindow = new BrowserWindow({
+    webPreferences: {
+      nodeIntegration: true,
+    },
+  });
+
   mainWindow.maximize();
 
   mainWindow.loadURL(url.format({
@@ -17,6 +24,7 @@ const createWindow = () => {
 
   mainWindow.on('closed', () => mainWindow = null);
   Menu.setApplicationMenu(null);
+  // mainWindow.webContents.openDevTools();
 };
 
 

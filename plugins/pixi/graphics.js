@@ -14,9 +14,9 @@ module.exports = {
       object.raw.overlay = {
         x: 0, y: 0, width: 640, height: 960, color: 0x000000, alpha: 1, fill: false, strokeWidth: 4,
       };
-
-      redraw();
     }
+
+    redraw();
 
     const createOverlayDescriptor = (prop) => ({
       set: (value) => {

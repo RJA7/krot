@@ -14,11 +14,12 @@
     "dat.gui": "^0.7.6",
     "lodash": "^4.17.11",
     "signals.js": "^1.0.2",
-    "stringify-object": "^3.3.0"
+    "stringify-object": "^3.3.0",
+    "mousetrap": "^1.6.3"
   },
   "devDependencies": {
-    "electron": "^1.8.2",
-    "electron-builder": "^19.56.0"
+    "electron": "^7.0.0",
+    "electron-builder": "^22.1.0"
   },
   "build": {
     "extraFiles": [
