@@ -8,6 +8,7 @@ class Controller {
 
     this.settings = config || krot.config.controllers[object.constructor.name];
     this.gui = new GUI();
+    this.gui.width = 300;
     this.object = object;
 
     this.settings.getFields(object).forEach((field) => {
