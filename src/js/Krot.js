@@ -169,7 +169,8 @@ class Krot {
 
   hasChanges() {
     try {
-      const {raw} = require(this.filePath);
+      const file = fs.readFileSync(this.filePath, 'utf-8');
+      const raw = eval(`(${file.split(this.token)[1]})`);
       return JSON.stringify(this.getRaw()) !== JSON.stringify(raw);
     } catch (e) {
       //
