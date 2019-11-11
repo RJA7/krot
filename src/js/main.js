@@ -7,9 +7,7 @@ Object.defineProperty = function (object, prop, descriptor) {
 
 const {remote} = require('electron');
 const {Watcher} = require('./Watcher');
-const path = require('path');
-const config = require(path.resolve(process.cwd(), 'plugins/config.json'));
-const App = require(path.resolve(process.cwd(), `plugins/${config.plugin}/App`));
+const App = require('./plugins/pixi/App');
 const Krot = require('./Krot');
 const Menu = require('./Menu');
 
