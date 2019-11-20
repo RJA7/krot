@@ -1,55 +1,31 @@
-class History {
+module.exports = class History {
   constructor() {
-    this.data = {
-      pointer: -1,
-      list: [],
-    };
+    this.items = [];
+    this.pointer = -1;
   }
 
-  clear() {
-    this.data.pointer = -1;
-    this.data.list = [];
+  reset() {
+    this.items = [];
+    this.pointer = -1;
   }
 
-  isChanged(raw) {
-    const current = this.data.list[this.data.pointer];
-    return JSON.stringify(raw) !== JSON.stringify(current);
-  }
-
-  putIfChanged(raw) {
-    this.isChanged(raw) && this.put(raw);
-  }
-
-  put(raw) {
-    this.data.list.length = this.data.pointer + 1;
-    this.data.list.push(raw);
-    this.data.list.length > 100 && this.data.list.shift();
-    this.data.pointer = this.data.list.length - 1;
+  put(data) {
+    this.pointer += 1;
+    this.items[this.pointer] = data;
+    this.items.length = this.pointer + 1;
   }
 
   getItem() {
-    return this.data.list[this.data.pointer];
+    return this.items[this.pointer];
   }
 
-  undo() {
-    if (this.data.pointer === 0) {
-      return null;
-    }
-
-    this.data.pointer -= 1;
-
-    return this.getItem();
+  stepBack() {
+    if (this.pointer < 1) return;
+    this.pointer -= 1;
   }
 
-  redo() {
-    if (this.data.pointer === this.data.list.length - 1) {
-      return null;
-    }
-
-    this.data.pointer += 1;
-
-    return this.getItem();
+  stepForward() {
+    if (this.pointer === this.items.length - 1) return;
+    this.pointer += 1;
   }
-}
-
-module.exports = { History };
+};

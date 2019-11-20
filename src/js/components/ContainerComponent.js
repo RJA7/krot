@@ -1,9 +1,24 @@
-const {floatPrecision, getNameField, getParentField, debugPosition} = require('./common');
+const {floatPrecision, getParentField, debugPosition} = require('./common');
 
-module.exports = {
-  getControls(model) {
+module.exports = class ContainerComponent {
+  constructor() {
+    this.type = 'Container';
+  }
+
+  getInitialModel() {
+    return {
+      x: 0,
+      y: 0,
+      scale: {x: 0, y: 0},
+      angle: 0,
+      alpha: 1,
+      visible: true,
+    };
+  }
+
+  getControls() {
     return [
-      getNameField(model),
+      {prop: 'name'},
       {prop: 'x', step: 1},
       {prop: 'y', step: 1},
       {prop: 'scale.x', step: floatPrecision},
@@ -11,9 +26,9 @@ module.exports = {
       {prop: 'angle', step: floatPrecision},
       {prop: 'alpha', min: 0, max: 1, step: floatPrecision},
       {prop: 'visible'},
-      getParentField(model),
+      getParentField(),
     ];
-  },
+  }
 
   render(view, model, prevModel) {
     view.x = model.x;
@@ -24,17 +39,13 @@ module.exports = {
     view.alpha = model.alpha;
     view.visible = model.visible;
 
-    if (model.texture !== prevModel.texture) {
-      view.texture = PIXI.Texture.from(model.texture);
-    }
-
     if (model.parent !== prevModel.parent) {
-      const parent = krot.data.list.find((m) => m.id === model.parent);
+      const parent = krot.getModel(model.parent);
       parent.addChild(view);
     }
-  },
+  }
 
-  debug: (object, graphics) => {
+  debug(object, graphics) {
     debugPosition(object, graphics);
-  },
+  }
 };

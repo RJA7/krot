@@ -1,12 +1,13 @@
 const stringifyObject = require('stringify-object');
 
-const jsTemplate = ({data, fields}) => `${app.filePrefix || ''}const { populate } = require('krot-pixi');
+const jsTemplate = (data) => `${krot.config.imports || ''}
+import { populate } from 'krot-pixi';
 
 const raw = ${krot.token}${stringifyObject(data)}${krot.token};
 
 class Layout {
   constructor(filter) {
-${fields.map(name => `    this.${name} = null;`).join('\n')}
+${data.list.filter(item => item.name).map(item => `    this.${item.name} = null;`).join('\n')}
 
     populate(this, raw, filter);
   }
@@ -15,16 +16,18 @@ ${fields.map(name => `    this.${name} = null;`).join('\n')}
 module.exports = { Layout, raw };
 `;
 
-const tsTemplate = ({data, fields, hash}) => `${app.filePrefix || ''}const { populate } = require('krot-pixi');
+const tsTemplate = (data) => `/* tslint:disable */
+${krot.config.imports || ''}
+import { populate } from 'krot-pixi';
 
 const raw = ${krot.token}${stringifyObject(data)}${krot.token};
 
 type Filter = Partial<{
-${fields.map(name => `  ${name}: boolean;`).join('\n')}
+${data.list.filter(item => item.name).map(item => `  ${item.name}: boolean;`).join('\n')}
 }>;
 
 class Layout {
-${fields.map(name => `  public readonly ${name}: ${app.typePrefix || ''}${hash[name].constructor.name};`).join('\n')}
+${data.list.filter(item => item.name).map(item => `  public readonly ${item.name}: PIXI.${item.type};`).join('\n')}
 
   constructor(filter?: Filter) {
     populate(this, raw, filter);

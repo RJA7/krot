@@ -1,76 +1,86 @@
-const {Controller} = require('./Controller');
-const {makeUniqueName} = require('./utils');
-const {defaultRaw} = require('./config');
 const {jsTemplate, tsTemplate} = require('./template');
+const components = require('./components');
+const Renderer = require('./Renderer');
 const {History} = require('./History');
 const {remote} = require('electron');
 const {GUI} = require('dat.gui');
-const Pool = require('./Pool');
+const uuid = require('uuid/v4');
 const _ = require('lodash');
 const fs = require('fs');
+
+const fileOptions = {
+  filters: [
+    {extensions: ['ts'], name: ''},
+    {extensions: ['js'], name: ''},
+  ],
+};
 
 class Krot {
   constructor() {
     const gui = new GUI();
 
-    this.makeUniqueName = makeUniqueName;
-    this.Controller = Controller;
-    this.token = '/* |raw| */';
-
+    this.token = '/* @!|raw|!@ */';
     this.treeGui = gui.addFolder('Tree');
     this.gui = gui;
     this.history = new History();
     this.controller = null;
-    this.hash = {};
     this.filePath = '';
-    this.config = null; // Client app config
 
-    this.data = {raw: {list: []}};
-    this.pool = new Pool(this.createView.bind(this));
+    this.components = components.map((Component) => new Component());
+    this.renderer = new Renderer();
+
+    this.config = {
+      imagesDirs: [],
+      atlasesDirs: [],
+      fontsDirs: [],
+      googleFonts: [],
+      standardFonts: [],
+      imports: `import * as PIXI from 'pixi.js';`,
+    };
+
+    this.data = {list: []};
   }
 
-  createView(type) {
-    return app.getClientModule()[type]();
+  setData(patch, skipHistory) {
+    this.data = {...this.data, ...patch};
+    !skipHistory && this.history.put(this.data);
   }
 
-  setData(data, skipHistory) {
-    const prevData = this.data;
-    this.data = data;
-
-    data.list.forEach((model, i) => {
-      const prevModel = prevData.list[i];
-      const view = this.pool.get(model.id, model.type);
-
-      if (model !== prevModel) {
-        const component = this.config.components[model.type];
-        component.render(view, model, prevModel);
-      }
-    });
+  updateItem(patch, skipHistory) {
+    const id = this.data.modelId;
+    this.setData({list: this.data.list.map((m) => m.id === id ? {...m, ...patch} : m)}, skipHistory);
   }
 
-  updateItem(model, patch, skipHistory) {
+  getModel(id = this.data.modelId) {
+    return krot.data.list.find((m) => m.id === id);
+  }
+
+  getModelIndex(id = this.data.modelId) {
+    return krot.data.list.findIndex((m) => m.id === id);
+  }
+
+  async new() {
+    await new Promise((fulfill) => this.requestSave(fulfill));
+    this.filePath = '';
+    this.history.reset();
+
+    const rootModel = this.components.find((c) => c.type === 'Container').getInitialModel();
+    rootModel.id = uuid();
+    rootModel.type = 'Container';
+    rootModel.name = 'root';
+
     this.setData({
-      ...this.data,
-      list: this.data.list.map((m) => m === model ? {...m, ...patch} : m),
-    }, skipHistory);
-  }
-
-  new() {
-    this.setRaw(defaultRaw);
-    this.filePath = '';
-    this.history.clear();
-    this.history.put(this.getRaw());
-    app.align();
+      modelId: '',
+      list: [rootModel],
+    });
   }
 
   open(filePath) {
     const file = fs.readFileSync(filePath, 'utf-8');
-    const raw = eval(`(${file.split(this.token)[1]})`);
-    this.setRaw(raw);
+    const data = eval(`(${file.split(this.token)[1]})`);
+    this.history.reset();
+    this.setData(data);
     this.filePath = filePath;
-    this.history.clear();
-    this.history.put(this.getRaw());
-    app.align();
   }
 
   save(cb) {
@@ -78,21 +88,22 @@ class Krot {
       return this.saveAs(cb);
     }
 
-    const data = this.getRaw();
-    const fields = data.list.map(raw => raw.name);
-    const template = this.filePath.endsWith('.js') ? jsTemplate : tsTemplate;
-    const file = template({data, fields, hash: this.hash});
+    const errors = this.validate();
 
+    if (errors) {
+      alert(errors[0]);
+      cb && cb();
+
+      return;
+    }
+
+    const template = this.filePath.endsWith('.js') ? jsTemplate : tsTemplate;
+    const file = template(this.data);
     fs.writeFile(this.filePath, file, () => cb && cb());
   }
 
   async saveAs(cb) {
-    const answer = await remote.dialog.showSaveDialog(remote.getCurrentWindow(), {
-      filters: [
-        {extensions: ['ts'], name: ''},
-        {extensions: ['js'], name: ''},
-      ],
-    });
+    const answer = await remote.dialog.showSaveDialog(remote.getCurrentWindow(), fileOptions);
 
     if (!answer.filePath) return;
 
@@ -101,190 +112,105 @@ class Krot {
   }
 
   undo() {
-    const raw = this.history.undo();
-    raw && this.setRaw(raw);
+    this.history.stepBack();
+    const item = this.history.getItem();
+    item && this.setData(item, true);
   }
 
   redo() {
-    const raw = this.history.redo();
-    raw && this.setRaw(raw);
+    this.history.stepForward();
+    const item = this.history.getItem();
+    item && this.setData(item, true);
   }
 
   moveDown() {
-    if (!this.controller || this.controller.object === app.getTree()) return;
-
-    app.moveDown(this.controller.object);
-    this.refreshTreeAndHash();
-    this.history.put(this.getRaw());
+    this.move(1);
   }
 
   moveUp() {
-    if (!this.controller || this.controller.object === app.getTree()) return;
+    this.move(-1);
+  }
 
-    app.moveUp(this.controller.object);
-    this.refreshTreeAndHash();
-    this.history.put(this.getRaw());
+  move(stepZ) {
+    const srcIndex = this.getModelIndex();
+
+    if (srcIndex === -1) return;
+
+    const model = this.data.list[srcIndex];
+    const parentIds = this.data.list.map((m) => m.parent);
+    const minIndex = parentIds.indexOf(model.parent);
+    const maxIndex = parentIds.lastIndexOf(model.parent) + 1;
+    const dstIndex = srcIndex + stepZ;
+
+    if (dstIndex < minIndex || dstIndex > maxIndex) return;
+
+    const list = [...this.data.list];
+    list[srcIndex] = this.data.list[dstIndex];
+    list[dstIndex] = this.data.list[srcIndex];
+    this.setData({list});
   }
 
   clone() {
-    if (!this.controller || this.controller.object === app.getTree()) return;
 
-    const raw = this.getRaw();
-    const stack = [this.controller.object];
-    const originNameCopyNameMap = {};
-
-    const makeCopyName = name => {
-      const _index = name.lastIndexOf('_');
-
-      if (_index === -1 || isNaN(Number(name.slice(_index + 1)))) {
-        return makeUniqueName(name, this.hash);
-      }
-
-      return makeUniqueName(name.slice(0, _index), this.hash);
-    };
-
-    while (stack.length) {
-      const object = stack.pop();
-      const index = raw.list.findIndex(v => v.name === object.name);
-      const item = raw.list[index];
-      const copy = JSON.parse(JSON.stringify(item));
-      copy.name = makeCopyName(item.name);
-      copy.parent = originNameCopyNameMap[item.parent] || this.controller.object.parent.name;
-      originNameCopyNameMap[item.name] = copy.name;
-      this.hash[copy.name] = copy;
-      raw.list.splice(index + 1, 0, copy);
-
-      stack.push(...object.children);
-    }
-
-    this.setRaw(raw);
-    this.history.put(raw);
   }
 
   destroy() {
-    if (!this.controller || this.controller.object === app.getTree()) return;
+    const index = this.getModelIndex();
 
-    this.controller.object.destroy();
-    this.controller.destroy();
-    this.controller = null;
-    this.refreshTreeAndHash();
-    this.history.put(this.getRaw());
+    if (index === -1 || index === 0) return;
+
+    this.setData({
+      list: this.data.list.filter((m, i) => i !== index),
+      modelId: this.data.list[0].id,
+    });
   }
 
-  create(typeName) {
-    const object = app.getClientModule().handlerMap[typeName]();
-    object.raw = {};
+  create(type) {
+    const parentModel = this.getModel();
 
-    object.name = makeUniqueName(
-      `${object.constructor.name.charAt(0).toLocaleLowerCase()}${object.constructor.name.slice(1)}`,
-      this.hash,
-    );
+    if (!parentModel) return;
 
-    if (this.controller) {
-      app.add(object, this.controller.object);
-      this.controller.destroy();
-      this.controller = null;
-    } else {
-      app.add(object);
-    }
+    const model = this.components.find((c) => c.type === type).getInitialModel();
+    model.id = uuid();
+    model.type = type;
+    model.parent = parentModel.id;
 
-    this.refreshTreeAndHash();
-    this.controller = new Controller(object);
-    this.history.put(this.getRaw());
+    const lastChildIndex = this.data.list.map((m) => m.parent).lastIndexOf(parentModel.id);
+
+    this.setData({
+      list: this.data.list.splice(lastChildIndex + 1, 0, model),
+      modelId: model.id,
+    });
   }
 
-  requestSave(cb) {
-    this.hasChanges() && confirm('Save current file?') ? this.save(cb) : cb();
+  async requestSave(cb) {
+    if (!this.hasChanges()) return;
+
+    const options = {buttons: ['Yes', 'No'], message: 'Save current file?'};
+    const answer = await remote.dialog.showMessageBox(remote.getCurrentWindow(), options);
+    answer.response === 0 ? this.save(cb) : cb();
   }
 
   hasChanges() {
-    try {
-      const file = fs.readFileSync(this.filePath, 'utf-8');
-      const raw = eval(`(${file.split(this.token)[1]})`);
-      return JSON.stringify(this.getRaw()) !== JSON.stringify(raw);
-    } catch (e) {
-      //
-    }
+    if (this.filePath) {
+      const template = this.filePath.endsWith('.js') ? jsTemplate : tsTemplate;
+      let file;
 
-    return false;
-  }
-
-  setRaw(raw) {
-    const layout = {};
-    app.getClientModule().populate(layout, raw);
-    raw.list.forEach((item) => layout[item.name].raw = raw);
-    app.setTree(layout[raw.list[0].name]);
-
-    this.refreshTreeAndHash();
-    this.controller && this.controller.destroy();
-    this.controller = null;
-  }
-
-  getRaw() {
-    const data = {
-      list: [],
-    };
-
-    const stack = [app.getTree()];
-
-    while (stack.length) {
-      const object = stack.shift();
-      data.list.push(this.getSaveObject(object));
-      stack.push(...object.children);
-    }
-
-    return data;
-  }
-
-  snapshot() {
-    this.filePath && this.history.putIfChanged(this.getRaw());
-  }
-
-  refreshTreeAndHash() {
-    this.gui.removeFolder(this.treeGui);
-    this.treeGui = this.gui.addFolder('Tree');
-    this.treeGui.domElement.classList.add('full-width-property');
-    this.treeGui.open();
-    this.hash = {};
-
-    const traverse = (object, prefix) => {
-      object.raw = this.getSaveObject(object);
-      this.hash[object.raw.name] = object;
-      const name = `${prefix}${object.name}`;
-
-      this.treeGui.add({
-        [name]: () => {
-          this.controller && this.controller.destroy();
-          this.controller = new Controller(object);
-        },
-      }, name);
-
-      object.children.forEach(child => traverse(child, `⠀${prefix}`));
-    };
-
-    traverse(app.getTree(), '');
-
-    if (this.controller && !this.hash[this.controller.object.raw.name]) {
-      this.controller.destroy();
-      this.controller = null;
-    }
-  }
-
-  getSaveObject(object) {
-    const settings = this.config.components[object.constructor.name];
-
-    return settings.getFields(object).reduce((acc, config) => {
-      if (config.export) {
-        const exports = config.export();
-        exports && _.set(acc, config.prop, exports);
-      } else if (config.descriptor) {
-        _.set(acc, config.prop, config.descriptor.get());
-      } else {
-        _.set(acc, config.prop, _.get(object, config.prop));
+      try {
+        file = fs.readFileSync(this.filePath, 'utf-8');
+      } catch (e) {
+        console.log(e);
+        return true;
       }
 
-      return acc;
-    }, {type: object.constructor.name});
+      return file === template(this.data);
+    }
+
+    return this.history.pointer !== -1;
+  }
+
+  validate() {
+
   }
 }
 

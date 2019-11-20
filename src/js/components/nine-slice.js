@@ -1,26 +1,26 @@
-const { floatPrecision, getNameField, getParentField, debugPosition } = require('./common');
+const {floatPrecision, getParentField, debugPosition} = require('./common');
 
 module.exports = {
-  getFields: (object) => {
+  getControls: (object) => {
     return [
-      getNameField(object),
-      { prop: 'x', step: 1 },
-      { prop: 'y', step: 1 },
-      { prop: 'scale.x', step: floatPrecision },
-      { prop: 'scale.y', step: floatPrecision },
-      { prop: 'width', step: 1 },
-      { prop: 'height', step: 1 },
-      { prop: 'leftWidth', step: 1 },
-      { prop: 'topHeight', step: 1 },
-      { prop: 'rightWidth', step: 1 },
-      { prop: 'bottomHeight', step: 1 },
-      { prop: 'angle', step: floatPrecision },
-      { prop: 'alpha', min: 0, max: 1, step: floatPrecision },
-      { prop: 'visible' },
-      { prop: 'tint', color: true },
-      { prop: 'blendMode', list: PIXI.BLEND_MODES },
-      { prop: 'interactive' },
-      { prop: 'buttonMode' },
+      {prop: 'name'},
+      {prop: 'x', step: 1},
+      {prop: 'y', step: 1},
+      {prop: 'scale.x', step: floatPrecision},
+      {prop: 'scale.y', step: floatPrecision},
+      {prop: 'width', step: 1},
+      {prop: 'height', step: 1},
+      {prop: 'leftWidth', step: 1},
+      {prop: 'topHeight', step: 1},
+      {prop: 'rightWidth', step: 1},
+      {prop: 'bottomHeight', step: 1},
+      {prop: 'angle', step: floatPrecision},
+      {prop: 'alpha', min: 0, max: 1, step: floatPrecision},
+      {prop: 'visible'},
+      {prop: 'tint', color: true},
+      {prop: 'blendMode', list: PIXI.BLEND_MODES},
+      {prop: 'interactive'},
+      {prop: 'buttonMode'},
       getParentField(object),
       {
         prop: 'texture',
