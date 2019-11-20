@@ -6,7 +6,7 @@ class Controller {
     krot.controller && krot.controller.destroy();
     krot.controller = this;
 
-    this.settings = config || krot.config.controllers[object.constructor.name];
+    this.settings = config || krot.config.components[object.constructor.name];
     this.gui = new GUI();
     this.gui.width = 300;
     this.object = object;

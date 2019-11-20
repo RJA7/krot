@@ -138,7 +138,7 @@ class MenuHandler {
 
         {
           label: 'Object',
-          submenu: Object.keys(config.controllers).map((key) => {
+          submenu: Object.keys(config.components).map((key) => {
             return {
               label: key,
               click: () => {
@@ -219,9 +219,9 @@ class MenuHandler {
       config[key] = config[key].map((dir) => path.resolve(base, dir));
     });
 
-    config.controllers = _.merge(
-      _.cloneDeep(app.getStandardControllers()),
-      config.controllers || {},
+    config.components = _.merge(
+      _.cloneDeep(app.getStandardComponents()),
+      config.components || {},
     );
 
     return config;

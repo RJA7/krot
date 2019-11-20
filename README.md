@@ -11,4 +11,4 @@ The program can be also extended without compilation, in two places:
 * plugins folder, in installed directory (Not recommended as all the changes will be removed after updates)
 * your project, in krot.config.js file.
 
-As extensions you can add, remove, override fields or whole controllers.
+As extensions you can add, remove, override fields or whole components.

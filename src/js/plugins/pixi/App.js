@@ -158,8 +158,8 @@ import * as PIXI from 'pixi.js';
     siblings[index + 1] = object;
   }
 
-  getStandardControllers() {
-    return require('./controllers');
+  getStandardComponents() {
+    return require('./components');
   }
 
   getClientModule() {

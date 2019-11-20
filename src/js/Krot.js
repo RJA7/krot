@@ -5,6 +5,7 @@ const {jsTemplate, tsTemplate} = require('./template');
 const {History} = require('./History');
 const {remote} = require('electron');
 const {GUI} = require('dat.gui');
+const Pool = require('./Pool');
 const _ = require('lodash');
 const fs = require('fs');
 
@@ -23,6 +24,35 @@ class Krot {
     this.hash = {};
     this.filePath = '';
     this.config = null; // Client app config
+
+    this.data = {raw: {list: []}};
+    this.pool = new Pool(this.createView.bind(this));
+  }
+
+  createView(type) {
+    return app.getClientModule()[type]();
+  }
+
+  setData(data, skipHistory) {
+    const prevData = this.data;
+    this.data = data;
+
+    data.list.forEach((model, i) => {
+      const prevModel = prevData.list[i];
+      const view = this.pool.get(model.id, model.type);
+
+      if (model !== prevModel) {
+        const component = this.config.components[model.type];
+        component.render(view, model, prevModel);
+      }
+    });
+  }
+
+  updateItem(model, patch, skipHistory) {
+    this.setData({
+      ...this.data,
+      list: this.data.list.map((m) => m === model ? {...m, ...patch} : m),
+    }, skipHistory);
   }
 
   new() {
@@ -241,7 +271,7 @@ class Krot {
   }
 
   getSaveObject(object) {
-    const settings = this.config.controllers[object.constructor.name];
+    const settings = this.config.components[object.constructor.name];
 
     return settings.getFields(object).reduce((acc, config) => {
       if (config.export) {

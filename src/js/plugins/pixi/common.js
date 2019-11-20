@@ -12,26 +12,31 @@ const getNameField = (object) => ({
   },
 });
 
-const getParentField = (object) => ({
+const getParentField = (model) => ({
   prop: 'parent',
+
   list: (() => {
-    const hash = {...krot.hash};
+    const filterHash = {[model.id]: true};
 
-    const filter = (object) => {
-      delete hash[object.name];
-      object.children.forEach(filter);
-    };
+    return krot.data.list
+      .filter((model) => {
+        if (filterHash[model.parent]) {
+          filterHash[model.id] = true;
+          return false;
+        }
 
-    filter(object);
-    return Object.keys(hash);
+        return true;
+      })
+      .map((model) => model.name);
   })(),
+
   descriptor: {
-    set: (value) => {
-      const parent = krot.hash[value];
-      parent.addChild(object);
-      krot.refreshTreeAndHash();
+    set: (parentName) => {
+      const parentModel = krot.data.list.find((model) => model.name === parentName);
+      krot.updateItem(model, {parent: parentModel.name});
     },
-    get: () => object.parent.name || '',
+
+    get: () => model.parent,
   },
 });
 
