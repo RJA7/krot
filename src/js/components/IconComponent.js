@@ -1,41 +1,37 @@
 const {floatPrecision} = require('./common');
-const uuid = require('uuid/v4');
 
 module.exports = class IconComponent {
   getInitialModel() {
     return {
-      id: uuid(),
-      name: '',
+      key: '',
       x: '',
       y: '',
-      scale: {x: 0, y: 0},
+      scale: {x: 1, y: 1},
       texture: '',
     };
   }
 
-  addDescriptors(control, iconId) {
-    if (control.descriptor) return;
-
-    control.descriptor = {
+  addDescriptor(control, iconIndex) {
+    control.descriptor = control.descriptor || {
       set(value) {
-        const model = krot.getModel();
-        const iconIndex = model.icons.find((ic) => ic.id === iconId);
+        const model = app.getModel();
+        const iconIndex = model.icons.find((ic, i) => i === iconIndex);
         const icons = [...model.icons];
 
         _.setWith(icons, `[${iconIndex}].${control.prop}`, value);
-        krot.updateItem({icons});
+        app.updateItem({icons});
       },
       get() {
-        const model = krot.getModel();
-        const iconIndex = model.icons.find((ic) => ic.id === iconId);
-
+        const model = app.getModel();
         return _.get(model, `icons[${iconIndex}].${control.prop}`);
       },
     };
   }
 
-  getControls(iconId) {
-    return [
+  getControls() {
+    const iconIndex = app.data.minorComponentData;
+
+    const controls = [
       {prop: 'key'},
       {prop: 'x'},
       {prop: 'y'},
@@ -45,14 +41,15 @@ module.exports = class IconComponent {
         prop: 'texture',
         descriptor: {
           set(texture) {
-            if (!PIXI.utils.TextureCache[texture]) return;
+            const model = app.getModel();
 
-            const model = krot.getModel();
-            krot.updateItem({icons: model.icons.map((ic) => ic.id === iconId ? {...ic, texture} : ic)});
+            app.updateItem({
+              icons: model.icons.map((ic, i) => i === iconIndex ? {...ic, texture} : ic),
+            });
           },
           get() {
-            const model = krot.getModel();
-            const icon = model.icons.find((ic) => ic.id === iconId);
+            const model = app.getModel();
+            const icon = model.icons[iconIndex];
 
             return icon.texture;
           },
@@ -61,11 +58,16 @@ module.exports = class IconComponent {
       {
         prop: 'remove', descriptor: {
           value() {
-            const model = krot.getModel();
-            krot.updateItem({icons: model.icons.filter((ic) => ic.id !== iconId)});
+            const model = app.getModel();
+            app.setData({minorComponent: null}, true);
+            app.updateItem({icons: model.icons.filter((ic, i) => i !== iconIndex)});
           },
         },
       },
-    ].map((control) => this.addDescriptors(control, iconId));
+    ];
+
+    controls.forEach((control) => this.addDescriptor(control, iconIndex));
+
+    return controls;
   }
 };

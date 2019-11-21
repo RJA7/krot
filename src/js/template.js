@@ -1,9 +1,9 @@
 const stringifyObject = require('stringify-object');
 
-const jsTemplate = (data) => `${krot.config.imports || ''}
+const jsTemplate = (data) => `${app.config.imports || ''}
 import { populate } from 'krot-pixi';
 
-const raw = ${krot.token}${stringifyObject(data)}${krot.token};
+const raw = ${app.token}${stringifyObject(data)}${app.token};
 
 class Layout {
   constructor(filter) {
@@ -17,10 +17,10 @@ module.exports = { Layout, raw };
 `;
 
 const tsTemplate = (data) => `/* tslint:disable */
-${krot.config.imports || ''}
+${app.config.imports || ''}
 import { populate } from 'krot-pixi';
 
-const raw = ${krot.token}${stringifyObject(data)}${krot.token};
+const raw = ${app.token}${stringifyObject(data)}${app.token};
 
 type Filter = Partial<{
 ${data.list.filter(item => item.name).map(item => `  ${item.name}: boolean;`).join('\n')}

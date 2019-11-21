@@ -1,7 +1,6 @@
 const {remote} = require('electron');
 const {Menu} = remote;
 const path = require('path');
-const _ = require('lodash');
 const Mousetrap = require('mousetrap');
 
 const configFileName = 'krot.config.js';
@@ -18,20 +17,22 @@ class MenuHandler {
     [
       [['ctrl+n', 'command+n'], () => this.new()],
       [['ctrl+o', 'command+o'], () => this.open()],
-      [['ctrl+s', 'command+s'], () => krot.save()],
-      [['ctrl+shift+s', 'command+shift+s'], () => krot.saveAs()],
-      [['ctrl+z', 'command+z'], () => krot.undo()],
-      [['ctrl+shift+z', 'command+shift+z'], () => krot.redo()],
-      [['ctrl+d', 'command+d'], () => krot.moveDown()],
-      [['ctrl+shift+d', 'command+shift+d'], () => krot.moveUp()],
-      [['ctrl+c', 'command+c'], () => krot.clone()],
+      [['ctrl+s', 'command+s'], () => app.save()],
+      [['ctrl+shift+s', 'command+shift+s'], () => app.saveAs()],
+      [['ctrl+z', 'command+z'], () => app.undo()],
+      [['ctrl+shift+z', 'command+shift+z'], () => app.redo()],
+      [['ctrl+d', 'command+d'], () => app.move(-1)],
+      [['ctrl+shift+d', 'command+shift+d'], () => app.move(1)],
+      [['ctrl+c', 'command+c'], () => app.clone()],
     ].forEach(([shortcut, handler]) => {
       Mousetrap.bind(shortcut, handler, 'keydown');
     });
+
+    this.set();
   }
 
   set(config) {
-    let template = [
+    const template = [
       {
         label: 'File',
         submenu: [
@@ -47,9 +48,77 @@ class MenuHandler {
               this.open();
             },
           },
+          {
+            label: 'Save',
+            click: () => {
+              app.save();
+            },
+          },
+          {
+            label: 'Save as',
+            click: () => {
+              app.saveAs();
+            },
+          },
           {type: 'separator'},
           {role: 'quit'},
         ],
+      },
+
+      {
+        label: 'Edit',
+        submenu: [
+          {
+            label: 'Undo',
+            click: () => {
+              app.undo();
+            },
+          },
+          {
+            label: 'Redo',
+            click: () => {
+              app.redo();
+            },
+          },
+          {type: 'separator'},
+          {
+            label: 'Move down',
+            click: () => {
+              app.move(-1);
+            },
+          },
+          {
+            label: 'Move up',
+            click: () => {
+              app.move(1);
+            },
+          },
+          {type: 'separator'},
+          {
+            label: 'Clone',
+            click: () => {
+              app.clone();
+            },
+          },
+          {
+            label: 'Destroy',
+            click: () => {
+              app.destroy();
+            },
+          },
+        ],
+      },
+
+      {
+        label: 'Object',
+        submenu: app.components.map((component) => {
+          return {
+            label: component.type,
+            click: () => {
+              app.create(component.type);
+            },
+          };
+        }),
       },
 
       {
@@ -58,121 +127,29 @@ class MenuHandler {
       },
     ];
 
-    if (config) {
-      template = [
-        {
-          label: 'File',
-          submenu: [
-            {
-              label: 'New',
-              click: () => {
-                this.new();
-              },
-            },
-            {
-              label: 'Open',
-              click: () => {
-                this.open();
-              },
-            },
-            {
-              label: 'Save',
-              click: () => {
-                krot.save();
-              },
-            },
-            {
-              label: 'Save as',
-              click: () => {
-                krot.saveAs();
-              },
-            },
-            {type: 'separator'},
-            {role: 'quit'},
-          ],
-        },
-
-        {
-          label: 'Edit',
-          submenu: [
-            {
-              label: 'Undo',
-              click: () => {
-                krot.undo();
-              },
-            },
-            {
-              label: 'Redo',
-              click: () => {
-                krot.redo();
-              },
-            },
-            {type: 'separator'},
-            {
-              label: 'Move down',
-              click: () => {
-                krot.moveDown();
-              },
-            },
-            {
-              label: 'Move up',
-              click: () => {
-                krot.moveUp();
-              },
-            },
-            {type: 'separator'},
-            {
-              label: 'Clone',
-              click: () => {
-                krot.clone();
-              },
-            },
-            {
-              label: 'Destroy',
-              click: () => {
-                krot.destroy();
-              },
-            },
-          ],
-        },
-
-        {
-          label: 'Object',
-          submenu: Object.keys(config.components).map((key) => {
-            return {
-              label: key,
-              click: () => {
-                krot.create(key);
-              },
-            };
-          }),
-        },
-
-        {
-          label: 'Dev tools',
-          role: 'toggledevtools',
-        },
-      ];
-    }
-
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
   }
 
   async new() {
-    await new Promise((resolve) => krot.requestSave(resolve));
+    const cancelled = await app.requestSave();
+
+    if (cancelled) return;
+
     const window = remote.getCurrentWindow();
     const answer = await remote.dialog.showSaveDialog(window, fileOptions);
 
     if (!answer.filePath) return;
 
     await this.load(answer.filePath);
-    krot.new();
-    krot.filePath = answer.filePath;
+    app.new(answer.filePath);
   }
 
   async open() {
-    await new Promise((resolve) => krot.requestSave(resolve));
+    const cancelled = await app.requestSave();
+
+    if (cancelled) return;
+
     const window = remote.getCurrentWindow();
     const answer = await remote.dialog.showOpenDialog(window, fileOptions);
     const filePath = answer.filePaths[0];
@@ -182,7 +159,7 @@ class MenuHandler {
     await this.load(filePath);
 
     try {
-      krot.open(filePath);
+      app.open(filePath);
     } catch (e) {
       console.log(e);
       alert('Wrong file format');
@@ -219,20 +196,15 @@ class MenuHandler {
       config[key] = config[key].map((dir) => path.resolve(base, dir));
     });
 
-    config.components = _.merge(
-      _.cloneDeep(app.getStandardComponents()),
-      config.components || {},
-    );
-
     return config;
   }
 
   async load(filePath) {
     const config = this.getConfig(filePath);
     this.set(config);
-    krot.config = config;
-    watcher.watch(config);
-    await app.load(config);
+    app.config = config;
+    app.watcher.watch(config);
+    await app.renderer.load(config);
   }
 }
 

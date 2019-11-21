@@ -1,4 +1,4 @@
-const {floatPrecision, getParentField, debugPosition} = require('./common');
+const {floatPrecision, debugPosition} = require('./common');
 const IconComponent = require('./IconComponent');
 
 const baseLineList = ['top', 'hanging', 'middle', 'alphabetic', 'ideographic', 'bottom'];
@@ -7,14 +7,25 @@ module.exports = class TextComponent {
   constructor() {
     this.type = 'Text';
     this.iconComponent = new IconComponent();
+
+    app.onDataChange.add((data, prevData) => {
+      if (data.minorComponent === this.iconComponent && data.modelId !== prevData.modelId) {
+        app.setData({minorComponent: null, minorComponentData: null});
+      }
+    });
+  }
+
+  createView() {
+    return new PIXI.Text();
   }
 
   getInitialModel() {
     return {
+      name: '',
       x: 0,
       y: 0,
       anchor: {x: 0, y: 0},
-      scale: {x: 0, y: 0},
+      scale: {x: 1, y: 1},
       angle: 0,
       alpha: 1,
       visible: true,
@@ -28,6 +39,7 @@ module.exports = class TextComponent {
       maxFontSize: 0,
       icons: [],
       style: new PIXI.TextStyle(),
+      parent: '',
     };
   }
 
@@ -46,12 +58,11 @@ module.exports = class TextComponent {
       {prop: 'blendMode', list: PIXI.BLEND_MODES},
       {prop: 'interactive'},
       {prop: 'buttonMode'},
-      getParentField(),
       {prop: 'text'},
       {prop: 'localize'},
       {prop: 'style.fontSize', name: 'fontSize', step: 1},
       {prop: 'style.fontWeight', name: 'fontWeight', list: ['normal', 'bold', 'bolder', 'lighter']},
-      {prop: 'style.fontFamily', name: 'fontFamily', list: krot.renderer.fonts},
+      {prop: 'style.fontFamily', name: 'fontFamily', list: app.renderer.fonts},
       {prop: 'style.fill', name: 'fill'},
       {prop: 'style.stroke', name: 'stroke'},
       {prop: 'style.strokeThickness', name: 'strokeThickness', step: 1},
@@ -84,27 +95,25 @@ module.exports = class TextComponent {
         name: '+ Add icon',
         descriptor: {
           value: () => {
-            krot.updateItem({
-              icons: [
-                ...krot.getModel().icons,
-                this.iconComponent.getInitialModel(),
-              ],
-            });
+            const iconModel = this.iconComponent.getInitialModel();
+            const icons = [...app.getModel().icons, iconModel];
+            app.updateItem({icons}, true);
+            app.setData({minorComponent: this.iconComponent, minorComponentData: icons.length - 1});
           },
         },
       },
-      ...krot.getModel().icons.map((icon) => ({
-        prop: icon.name,
+      ...app.getModel().icons.map((icon, index) => ({
+        prop: icon.key,
         descriptor: {
           value: () => {
-            // new krot.Controller(icon, this.iconComponent.getControls(icon));
+            app.setData({minorComponent: this.iconComponent, minorComponentData: index});
           },
         },
       })),
     ];
   }
 
-  render(view, model, prevModel) {
+  render(view, model, prevModel = {}) {
     view.x = model.x;
     view.y = model.y;
     view.anchor.x = model.anchor.x;
@@ -124,12 +133,15 @@ module.exports = class TextComponent {
 
     if (model.icons !== prevModel.icons) {
       view.icons = model.icons.reduce((acc, icon) => {
-        const iconView = new PIXI.Sprite(PIXI.Texture.from(icon.texture));
+        const iconView = new PIXI.Sprite();
         iconView.x = icon.x;
         iconView.y = icon.y;
         iconView.scale.x = icon.scale.x;
         iconView.scale.y = icon.scale.y;
         acc[icon.key] = iconView;
+
+        iconView.texture = PIXI.utils.TextureCache[model.texture] ?
+          PIXI.Texture.from(icon.texture) : app.renderer.noTexture;
 
         return acc;
       }, {});
@@ -140,16 +152,12 @@ module.exports = class TextComponent {
     }
 
     if (model.style !== prevModel.style) {
-      view.setStyle(model.style);
+      view.style = model.style;
     }
 
     if (model.parent !== prevModel.parent) {
-      const parent = krot.getModel(model.parent);
+      const parent = app.renderer.getExistingView(model.parent);
       parent.addChild(view);
-    }
-
-    if (model.texture !== prevModel.texture) {
-      view.texture = PIXI.Texture.from(model.texture);
     }
   }
 

@@ -1,11 +1,12 @@
 const {jsTemplate, tsTemplate} = require('./template');
 const components = require('./components');
 const Renderer = require('./Renderer');
-const {History} = require('./History');
+const Watcher = require('./Watcher');
+const History = require('./History');
+const {Signal} = require('signals.js');
 const {remote} = require('electron');
-const {GUI} = require('dat.gui');
 const uuid = require('uuid/v4');
-const _ = require('lodash');
+const Menu = require('./Menu');
 const fs = require('fs');
 
 const fileOptions = {
@@ -15,19 +16,20 @@ const fileOptions = {
   ],
 };
 
-class Krot {
+class App {
   constructor() {
-    const gui = new GUI();
+    window.app = this;
 
-    this.token = '/* @!|raw|!@ */';
-    this.treeGui = gui.addFolder('Tree');
-    this.gui = gui;
+    this.watcher = new Watcher();
+    this.token = '/* 4@4!8|raw|8!4@ */';
     this.history = new History();
     this.controller = null;
     this.filePath = '';
+    this.onDataChange = new Signal();
 
     this.components = components.map((Component) => new Component());
-    this.renderer = new Renderer();
+    this.data = {list: [], modelId: '', minorComponent: null, minorComponentData: null};
+    this.renderer = new Renderer(this.data);
 
     this.config = {
       imagesDirs: [],
@@ -38,12 +40,32 @@ class Krot {
       imports: `import * as PIXI from 'pixi.js';`,
     };
 
-    this.data = {list: []};
+    window.onbeforeunload = async (e) => {
+      e.returnValue = false;
+      const cancelled = await this.requestSave();
+      !cancelled && remote.getCurrentWindow().close();
+    };
+  }
+
+  createData() {
+    const rootModel = this.components.find((c) => c.type === 'Container').getInitialModel();
+    rootModel.id = uuid();
+    rootModel.type = 'Container';
+    rootModel.name = 'root';
+
+    return {
+      list: [rootModel],
+      modelId: rootModel.id,
+      minorComponent: null,
+      minorComponentData: null,
+    };
   }
 
   setData(patch, skipHistory) {
+    const prevData = this.data;
     this.data = {...this.data, ...patch};
     !skipHistory && this.history.put(this.data);
+    this.onDataChange.dispatch(this.data, prevData);
   }
 
   updateItem(patch, skipHistory) {
@@ -52,63 +74,54 @@ class Krot {
   }
 
   getModel(id = this.data.modelId) {
-    return krot.data.list.find((m) => m.id === id);
+    return this.data.list.find((m) => m.id === id);
   }
 
   getModelIndex(id = this.data.modelId) {
-    return krot.data.list.findIndex((m) => m.id === id);
+    return this.data.list.findIndex((m) => m.id === id);
   }
 
-  async new() {
-    await new Promise((fulfill) => this.requestSave(fulfill));
-    this.filePath = '';
+  async new(filePath) {
+    this.filePath = filePath;
     this.history.reset();
-
-    const rootModel = this.components.find((c) => c.type === 'Container').getInitialModel();
-    rootModel.id = uuid();
-    rootModel.type = 'Container';
-    rootModel.name = 'root';
-
-    this.setData({
-      modelId: '',
-      list: [rootModel],
-    });
+    this.setData(this.createData());
   }
 
   open(filePath) {
     const file = fs.readFileSync(filePath, 'utf-8');
-    const data = eval(`(${file.split(this.token)[1]})`);
+    const parts = file.split(this.token);
+    const data = eval(`(${parts[1]})`);
     this.history.reset();
     this.setData(data);
     this.filePath = filePath;
   }
 
-  save(cb) {
+  async save() {
     if (!this.filePath) {
-      return this.saveAs(cb);
+      await this.saveAs();
+      return;
     }
 
     const errors = this.validate();
 
     if (errors) {
       alert(errors[0]);
-      cb && cb();
-
       return;
     }
 
     const template = this.filePath.endsWith('.js') ? jsTemplate : tsTemplate;
     const file = template(this.data);
-    fs.writeFile(this.filePath, file, () => cb && cb());
+
+    return new Promise((fulfill) => fs.writeFile(this.filePath, file, fulfill));
   }
 
-  async saveAs(cb) {
+  async saveAs() {
     const answer = await remote.dialog.showSaveDialog(remote.getCurrentWindow(), fileOptions);
 
     if (!answer.filePath) return;
 
     this.filePath = answer.filePath;
-    this.save(cb);
+    await this.save();
   }
 
   undo() {
@@ -121,14 +134,6 @@ class Krot {
     this.history.stepForward();
     const item = this.history.getItem();
     item && this.setData(item, true);
-  }
-
-  moveDown() {
-    this.move(1);
-  }
-
-  moveUp() {
-    this.move(-1);
   }
 
   move(stepZ) {
@@ -166,29 +171,33 @@ class Krot {
   }
 
   create(type) {
-    const parentModel = this.getModel();
+    const parentIndex = this.getModelIndex();
 
-    if (!parentModel) return;
+    if (parentIndex === -1) return;
 
+    const parentModel = this.data.list[parentIndex];
     const model = this.components.find((c) => c.type === type).getInitialModel();
     model.id = uuid();
     model.type = type;
     model.parent = parentModel.id;
 
     const lastChildIndex = this.data.list.map((m) => m.parent).lastIndexOf(parentModel.id);
+    const index = (lastChildIndex === -1 ? parentIndex : lastChildIndex) + 1;
 
     this.setData({
-      list: this.data.list.splice(lastChildIndex + 1, 0, model),
+      list: [...this.data.list.slice(0, index), model, ...this.data.list.slice(index)],
       modelId: model.id,
     });
   }
 
-  async requestSave(cb) {
+  async requestSave() {
     if (!this.hasChanges()) return;
 
-    const options = {buttons: ['Yes', 'No'], message: 'Save current file?'};
+    const options = {buttons: ['Yes', 'No', 'Cancel'], message: 'Save current file?'};
     const answer = await remote.dialog.showMessageBox(remote.getCurrentWindow(), options);
-    answer.response === 0 ? this.save(cb) : cb();
+    answer.response === 0 && await this.save();
+
+    return answer.response === 2;
   }
 
   hasChanges() {
@@ -214,4 +223,5 @@ class Krot {
   }
 }
 
-module.exports = Krot;
+new App();
+new Menu();

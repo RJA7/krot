@@ -7,14 +7,16 @@
     <meta name="viewport"
           content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
 
-    <title>krot</title>
+    <title>Layouts editor</title>
 
-    <link rel="stylesheet" href="style.css" type="text/css" />
+    <link href="style.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 
 <script>
-  require('./js/main');
+  window.PIXI = require('pixi.js');
+  window._ = require('lodash');
+  require('./js/app');
 </script>
 
 </body>

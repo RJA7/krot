@@ -1,36 +1,5 @@
 const floatPrecision = 0.001;
 
-const getParentField = () => ({
-  prop: 'parent',
-
-  list: (() => {
-    const filterHash = {[krot.data.modelId]: true};
-
-    return krot.data.list
-      .filter((model) => {
-        if (filterHash[model.parent]) {
-          filterHash[model.id] = true;
-          return false;
-        }
-
-        return true;
-      })
-      .map((model) => model.name);
-  })(),
-
-  descriptor: {
-    set: (parentName) => {
-      const parentModel = krot.data.list.find((m) => m.name === parentName);
-      krot.updateItem({parent: parentModel.id});
-    },
-    get: () => {
-      const model = krot.getModel();
-      const parentModel = krot.getModel(model.parent);
-      return parentModel.name;
-    },
-  },
-});
-
 const debugPosition = (view, graphics) => {
   const position = graphics.toLocal(view, view.parent);
   graphics.beginFill(0xA9B7C6, 1);
@@ -38,8 +7,22 @@ const debugPosition = (view, graphics) => {
   graphics.endFill();
 };
 
+const addRegularDescriptor = (control) => {
+  control.descriptor = control.descriptor || {
+    set: (value) => {
+      const index = app.getModelIndex();
+      const data = {...app.data};
+      _.setWith(data, `list[${index}].${control.prop}`, value, _.clone);
+      app.setData(data);
+    },
+    get: () => {
+      return _.get(app.getModel(), control.prop);
+    },
+  };
+};
+
 module.exports = {
   floatPrecision,
-  getParentField,
   debugPosition,
+  addRegularDescriptor,
 };

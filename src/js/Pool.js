@@ -4,8 +4,6 @@ class Pool {
     this.map = {};
     this.usedMap = {};
     this.dirty = false;
-
-    app.ticker.add(this.update, this);
   }
 
   get(key, createParams) {
@@ -22,7 +20,7 @@ class Pool {
     return object;
   }
 
-  update() {
+  removeUnused() {
     if (!this.dirty) return;
 
     Object.keys(this.map).forEach((key) => {

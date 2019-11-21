@@ -1,19 +1,15 @@
 const {Controller} = require('./Controller');
-const clientModule = require('krot-pixi');
 const WebFont = require('webfontloader');
-const PIXI = require('pixi.js');
 const Pool = require('./Pool');
 const path = require('path');
 const fs = require('fs');
 
-window.PIXI = PIXI;
-clientModule.init(PIXI);
-
 module.exports = class Renderer {
-  constructor() {
+  constructor(prevData) {
     this.pixiApp = new PIXI.Application();
     document.body.appendChild(this.pixiApp.view);
     this.pixiApp.renderer.backgroundColor = 0x2B2B2B;
+    this.mouse = this.pixiApp.renderer.plugins.interaction.mouse;
 
     this.ground = new PIXI.Container();
     this.pixiApp.stage.addChild(this.ground);
@@ -22,7 +18,7 @@ module.exports = class Renderer {
     this.ground.addChild(this.debugGraphics);
 
     this.drag = {dx: 0, dy: 0};
-    this.data = null;
+    this.prevData = prevData;
     this.controller = null;
     this.fonts = [];
     this.pool = new Pool(this.createView.bind(this));
@@ -31,6 +27,35 @@ module.exports = class Renderer {
     this.pixiApp.renderer.plugins.interaction.on('mouseup', this.handleMouseUp, this);
     this.pixiApp.view.addEventListener('wheel', this.handleWheelRotate.bind(this));
     this.pixiApp.ticker.add(this.update, this);
+
+    this.handleResize();
+    window.addEventListener('resize', () => this.handleResize());
+  }
+
+  createNoTextureCanvas() {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 64;
+    canvas.height = 64;
+    ctx.fillStyle = '#000000';
+    ctx.strokeStyle = '#0e9019';
+    ctx.lineWidth = 4;
+
+    ctx.fillRect(0, 0, 64, 64);
+    ctx.strokeRect(0, 0, 64, 64);
+
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(64, 64);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(64, 0);
+    ctx.lineTo(0, 64);
+    ctx.stroke();
+
+    return canvas;
   }
 
   async load(config) {
@@ -40,6 +65,7 @@ module.exports = class Renderer {
     loader.reset();
     loader.defaultQueryString = String(Date.now());
 
+    this.noTexture = PIXI.Texture.from(this.createNoTextureCanvas());
     this.fonts = [...config.standardFonts, ...config.googleFonts];
 
     config.imagesDirs.forEach((dir) => {
@@ -96,8 +122,8 @@ module.exports = class Renderer {
 
   handleWheelRotate(e) {
     const multiplier = 1 - (e.wheelDeltaY > 0 ? -1 : 1) * 0.04;
-    const x = this.pixiApp.renderer.plugins.interaction.mouse.global.x;
-    const y = this.pixiApp.renderer.plugins.interaction.mouse.global.y;
+    const x = this.mouse.global.x;
+    const y = this.mouse.global.y;
     this.ground.x = x + (this.ground.x - x) * multiplier;
     this.ground.y = y + (this.ground.y - y) * multiplier;
     this.ground.scale.x *= multiplier;
@@ -105,14 +131,14 @@ module.exports = class Renderer {
   }
 
   handleResize() {
-    app.renderer.resize(window.innerWidth, window.innerHeight);
-    app.view.style.width = `${window.innerWidth}px`;
-    app.view.style.height = `${window.innerHeight}px`;
+    this.pixiApp.renderer.resize(window.innerWidth, window.innerHeight);
+    this.pixiApp.view.style.width = `${window.innerWidth}px`;
+    this.pixiApp.view.style.height = `${window.innerHeight}px`;
   }
 
   dragUpdate() {
-    this.ground.x = this.pixiApp.renderer.plugins.interaction.mouse.global.x + this.drag.dx;
-    this.ground.y = this.pixiApp.renderer.plugins.interaction.mouse.global.y + this.drag.dy;
+    this.ground.x = this.mouse.global.x + this.drag.dx;
+    this.ground.y = this.mouse.global.y + this.drag.dy;
   }
 
   align() {
@@ -122,32 +148,44 @@ module.exports = class Renderer {
   }
 
   createView(type) {
-    return clientModule.handlerMap[type]();
+    const component = app.components.find((c) => c.type === type);
+    return component.createView();
+  }
+
+  getExistingView(id) {
+    return id ? this.pool.get(id) : this.ground;
   }
 
   update() {
-    if (krot.data !== this.data) {
-      krot.data.list.forEach((model, i) => {
-        const prevModel = this.data.list[i];
+    if (app.data !== this.prevData) {
+      app.data.list.forEach((model, i) => {
+        const prevModel = this.prevData.list[i];
         const view = this.pool.get(model.id, model.type);
 
         if (model !== prevModel) {
-          const component = krot.components[model.type];
+          const component = app.components.find((c) => c.type === model.type);
           component.render(view, model, prevModel);
         }
       });
 
-      if (krot.data.modelId !== this.data.modelId) {
+      if (
+        app.data.modelId !== this.prevData.modelId ||
+        app.data.minorComponent !== this.prevData.minorComponent ||
+        app.data.minorComponentData !== this.prevData.minorComponentData
+      ) {
         this.controller && this.controller.destroy();
-        const model = krot.getModel();
 
-        if (model) {
-          const component = krot.components.find((c) => c.type === model.type);
+        const model = app.getModel();
+        const component = app.data.minorComponent ||
+          model && app.components.find((c) => c.type === model.type);
+
+        if (component) {
           this.controller = new Controller(component);
         }
       }
 
-      this.data = krot.data;
+      this.prevData = app.data;
+      this.pool.removeUnused();
     }
   }
 };

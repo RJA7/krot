@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-class Watcher {
+module.exports = class Watcher {
   constructor() {
     this.watchers = [];
     this.timeoutId = -1;
@@ -36,15 +36,12 @@ class Watcher {
   }
 
   async reload(config) {
-    const raw = krot.getRaw();
-    await app.load(config);
-    krot.setRaw(raw);
+    await app.renderer.load(config);
+    app.setData(app.data, true);
   }
 
   clear() {
     this.watchers.forEach((watcher) => watcher.close());
     this.watchers = [];
   }
-}
-
-module.exports = { Watcher };
+};

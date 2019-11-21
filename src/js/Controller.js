@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const {GUI} = require('dat.gui');
 
 class Controller {
@@ -6,32 +5,39 @@ class Controller {
     this.gui = new GUI();
     this.gui.width = 300;
 
+    const context = {};
+
     component
       .getControls()
-      .forEach((field) => {
-        const descriptor = field.descriptor || {
-          set: (value) => {
-            const index = krot.getModelIndex();
-            const data = {...krot.data};
-            _.setWith(data, ['list', index, field.prop], value, _.clone);
-            krot.setData(data);
-          },
-          get: () => {
-            return _.get(krot.getModel(), field.prop);
-          },
-        };
+      .forEach((control) => {
+        const descriptor = control.descriptor || this.createRegularDescriptor(control);
+        Object.defineProperty(context, control.prop, descriptor);
 
-        const context = {};
-        Object.defineProperty(context, field.prop, descriptor);
+        const controller = control.color ?
+          this.gui.addColor(context, control.prop) :
+          this.gui.add(context, control.prop, control.list);
 
-        const controller = field.color ? this.gui.addColor(context, field.prop) : this.gui.add(context, field.prop, field.list);
-        ['name', 'min', 'max', 'step'].forEach((v) => v in field && controller[v](field[v]));
+        ['name', 'min', 'max', 'step'].forEach((v) => v in control && controller[v](control[v]));
       });
   }
 
+  createRegularDescriptor(control) {
+    return {
+      set: (value) => {
+        const index = app.getModelIndex();
+        const data = {...app.data};
+        _.setWith(data, `list[${index}].${control.prop}`, value, _.clone);
+        app.setData(data);
+      },
+      get: () => {
+        return _.get(app.getModel(), control.prop);
+      },
+    };
+  }
+
   destroy() {
-    this.destroy = () => void 0;
-    this.gui.destroy();
+    this.gui && this.gui.destroy();
+    this.gui = null;
   }
 }
 

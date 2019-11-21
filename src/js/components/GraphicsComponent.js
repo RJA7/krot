@@ -1,12 +1,12 @@
 const {floatPrecision, debugPosition} = require('./common');
 
-module.exports = class SpriteComponent {
+module.exports = class GraphicsComponent {
   constructor() {
-    this.type = 'Sprite';
+    this.type = 'Graphics';
   }
 
   createView() {
-    return new PIXI.Sprite();
+    return new PIXI.Graphics();
   }
 
   getInitialModel() {
@@ -14,8 +14,8 @@ module.exports = class SpriteComponent {
       name: '',
       x: 0,
       y: 0,
-      anchor: {x: 0, y: 0},
       scale: {x: 1, y: 1},
+      pivot: {x: 0, y: 0},
       angle: 0,
       alpha: 1,
       visible: true,
@@ -23,7 +23,6 @@ module.exports = class SpriteComponent {
       blendMode: PIXI.BLEND_MODES.NORMAL,
       interactive: false,
       buttonMode: false,
-      texture: '',
       parent: '',
     };
   }
@@ -33,12 +32,10 @@ module.exports = class SpriteComponent {
       {prop: 'name'},
       {prop: 'x', step: 1},
       {prop: 'y', step: 1},
-      {prop: 'anchor.x', step: floatPrecision},
-      {prop: 'anchor.y', step: floatPrecision},
       {prop: 'scale.x', step: floatPrecision},
       {prop: 'scale.y', step: floatPrecision},
-      {prop: 'width', descriptor: this.createWidthControlDescriptor()},
-      {prop: 'height', descriptor: this.createHeightControlDescriptor()},
+      {prop: 'pivot.x', step: floatPrecision},
+      {prop: 'pivot.y', step: floatPrecision},
       {prop: 'angle', step: floatPrecision},
       {prop: 'alpha', min: 0, max: 1, step: floatPrecision},
       {prop: 'visible'},
@@ -46,17 +43,16 @@ module.exports = class SpriteComponent {
       {prop: 'blendMode', list: PIXI.BLEND_MODES},
       {prop: 'interactive'},
       {prop: 'buttonMode'},
-      {prop: 'texture'},
     ];
   }
 
   render(view, model, prevModel = {}) {
     view.x = model.x;
     view.y = model.y;
-    view.anchor.x = model.anchor.x;
-    view.anchor.y = model.anchor.y;
     view.scale.x = model.scale.x;
     view.scale.y = model.scale.y;
+    view.pivot.x = model.pivot.x;
+    view.pivot.y = model.pivot.y;
     view.angle = model.angle;
     view.alpha = model.alpha;
     view.visible = model.visible;
@@ -74,36 +70,6 @@ module.exports = class SpriteComponent {
       view.texture = PIXI.utils.TextureCache[model.texture] ?
         PIXI.Texture.from(model.texture) : app.renderer.noTexture;
     }
-  }
-
-  createWidthControlDescriptor() {
-    return {
-      set(width) {
-        const model = app.getModel();
-        const texture = PIXI.utils.TextureCache[model.texture] || app.renderer.noTexture;
-        app.updateItem({scale: {...model.scale, x: width / texture.width}});
-      },
-      get() {
-        const model = app.getModel();
-        const texture = PIXI.utils.TextureCache[model.texture] || app.renderer.noTexture;
-        return texture.width * model.scale.x;
-      },
-    };
-  }
-
-  createHeightControlDescriptor() {
-    return {
-      set(height) {
-        const model = app.getModel();
-        const texture = PIXI.utils.TextureCache[model.texture] || app.renderer.noTexture;
-        app.updateItem({scale: {...model.scale, y: height / texture.height}});
-      },
-      get() {
-        const model = app.getModel();
-        const texture = PIXI.utils.TextureCache[model.texture] || app.renderer.noTexture;
-        return texture.height * model.scale.y;
-      },
-    };
   }
 
   debug(view, graphics) {
