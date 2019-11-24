@@ -1,4 +1,4 @@
-const {floatPrecision, debugPosition} = require('./common');
+const {debugPosition} = require('./common');
 
 module.exports = class SpriteComponent {
   constructor() {
@@ -33,14 +33,14 @@ module.exports = class SpriteComponent {
       {prop: 'name'},
       {prop: 'x', step: 1},
       {prop: 'y', step: 1},
-      {prop: 'anchor.x', step: floatPrecision},
-      {prop: 'anchor.y', step: floatPrecision},
-      {prop: 'scale.x', step: floatPrecision},
-      {prop: 'scale.y', step: floatPrecision},
-      {prop: 'width', descriptor: this.createWidthControlDescriptor()},
-      {prop: 'height', descriptor: this.createHeightControlDescriptor()},
-      {prop: 'angle', step: floatPrecision},
-      {prop: 'alpha', min: 0, max: 1, step: floatPrecision},
+      {prop: 'anchor.x'},
+      {prop: 'anchor.y'},
+      {prop: 'scale.x'},
+      {prop: 'scale.y'},
+      {prop: 'width', descriptor: this.createWidthControlDescriptor(), step: 1},
+      {prop: 'height', descriptor: this.createHeightControlDescriptor(), step: 1},
+      {prop: 'angle'},
+      {prop: 'alpha', min: 0, max: 1},
       {prop: 'visible'},
       {prop: 'tint', color: true},
       {prop: 'blendMode', list: PIXI.BLEND_MODES},

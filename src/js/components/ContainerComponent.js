@@ -1,4 +1,4 @@
-const {floatPrecision, debugPosition} = require('./common');
+const {debugPosition} = require('./common');
 
 module.exports = class ContainerComponent {
   constructor() {
@@ -28,12 +28,12 @@ module.exports = class ContainerComponent {
       {prop: 'name'},
       {prop: 'x', step: 1},
       {prop: 'y', step: 1},
-      {prop: 'scale.x', step: floatPrecision},
-      {prop: 'scale.y', step: floatPrecision},
-      {prop: 'pivot.x', step: floatPrecision},
-      {prop: 'pivot.y', step: floatPrecision},
-      {prop: 'angle', step: floatPrecision},
-      {prop: 'alpha', min: 0, max: 1, step: floatPrecision},
+      {prop: 'scale.x'},
+      {prop: 'scale.y'},
+      {prop: 'pivot.x', step: 1},
+      {prop: 'pivot.y', step: 1},
+      {prop: 'angle'},
+      {prop: 'alpha', min: 0, max: 1},
       {prop: 'visible'},
     ];
   }

@@ -1,4 +1,5 @@
 const {jsTemplate, tsTemplate} = require('./template');
+const MetaController = require('./MetaController');
 const components = require('./components');
 const Renderer = require('./Renderer');
 const Watcher = require('./Watcher');
@@ -20,14 +21,13 @@ class App {
   constructor() {
     window.app = this;
 
+    this.data = this.createData();
     this.watcher = new Watcher();
     this.token = '/* 4@4!8|raw|8!4@ */';
     this.history = new History();
     this.filePath = '';
     this.onDataChange = new Signal();
-
     this.components = components.map((Component) => new Component());
-    this.data = {list: [], modelId: '', minorComponent: null, minorComponentData: null};
     this.renderer = new Renderer(this.data);
 
     this.config = {
@@ -39,6 +39,9 @@ class App {
       imports: `import * as PIXI from 'pixi.js';`,
     };
 
+    new MetaController();
+    new Menu();
+
     window.onbeforeunload = async (e) => {
       e.returnValue = false;
       const cancelled = await this.requestSave();
@@ -47,16 +50,14 @@ class App {
   }
 
   createData() {
-    const rootModel = this.components.find((c) => c.type === 'Container').getInitialModel();
-    rootModel.id = uuid();
-    rootModel.type = 'Container';
-    rootModel.name = 'root';
-
     return {
-      list: [rootModel],
-      modelId: rootModel.id,
+      list: [],
+      modelId: '',
       minorComponent: null,
       minorComponentData: null,
+      controlStep: 1.0,
+      width: 640,
+      height: 960,
     };
   }
 
@@ -83,7 +84,18 @@ class App {
   async new(filePath) {
     this.filePath = filePath;
     this.history.reset();
-    this.setData(this.createData());
+
+    const data = this.createData();
+
+    const rootModel = this.components.find((c) => c.type === 'Container').getInitialModel();
+    rootModel.id = uuid();
+    rootModel.type = 'Container';
+    rootModel.name = 'root';
+
+    data.modelId = rootModel.id;
+    data.list.push(rootModel);
+
+    this.setData(data);
   }
 
   open(filePath) {
@@ -223,4 +235,3 @@ class App {
 }
 
 new App();
-new Menu();

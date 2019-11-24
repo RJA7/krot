@@ -172,7 +172,8 @@ module.exports = class Renderer {
       if (
         app.data.modelId !== this.prevData.modelId ||
         app.data.minorComponent !== this.prevData.minorComponent ||
-        app.data.minorComponentData !== this.prevData.minorComponentData
+        app.data.minorComponentData !== this.prevData.minorComponentData ||
+        app.data.controlStep !== this.prevData.controlStep
       ) {
         this.controller && this.controller.destroy();
 

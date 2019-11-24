@@ -1,5 +1,3 @@
-const floatPrecision = 0.001;
-
 const debugPosition = (view, graphics) => {
   const position = graphics.toLocal(view, view.parent);
   graphics.beginFill(0xA9B7C6, 1);
@@ -8,6 +6,5 @@ const debugPosition = (view, graphics) => {
 };
 
 module.exports = {
-  floatPrecision,
   debugPosition,
 };

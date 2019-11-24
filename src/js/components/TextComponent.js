@@ -1,4 +1,4 @@
-const {floatPrecision, debugPosition} = require('./common');
+const {debugPosition} = require('./common');
 const IconComponent = require('./IconComponent');
 
 const baseLineList = ['top', 'hanging', 'middle', 'alphabetic', 'ideographic', 'bottom'];
@@ -48,12 +48,12 @@ module.exports = class TextComponent {
       {prop: 'name'},
       {prop: 'x', step: 1},
       {prop: 'y', step: 1},
-      {prop: 'anchor.x', step: floatPrecision},
-      {prop: 'anchor.y', step: floatPrecision},
-      {prop: 'scale.x', step: floatPrecision},
-      {prop: 'scale.y', step: floatPrecision},
-      {prop: 'angle', step: floatPrecision},
-      {prop: 'alpha', min: 0, max: 1, step: floatPrecision},
+      {prop: 'anchor.x'},
+      {prop: 'anchor.y'},
+      {prop: 'scale.x'},
+      {prop: 'scale.y'},
+      {prop: 'angle'},
+      {prop: 'alpha', min: 0, max: 1},
       {prop: 'visible'},
       {prop: 'blendMode', list: PIXI.BLEND_MODES},
       {prop: 'interactive'},
@@ -74,8 +74,8 @@ module.exports = class TextComponent {
       {prop: 'style.padding', name: 'padding', step: 1},
       {prop: 'style.fontStyle', name: 'fontStyle', list: ['normal', 'italic', 'oblique']},
       {prop: 'style.dropShadow', name: 'shadow'},
-      {prop: 'style.dropShadowAlpha', name: 'shadowAlpha', min: 0, max: 1, step: floatPrecision},
-      {prop: 'style.dropShadowAngle', name: 'shadowAngle', step: floatPrecision},
+      {prop: 'style.dropShadowAlpha', name: 'shadowAlpha', min: 0, max: 1},
+      {prop: 'style.dropShadowAngle', name: 'shadowAngle'},
       {prop: 'style.dropShadowBlur', name: 'shadowBlur', step: 1},
       {prop: 'style.dropShadowColor', name: 'shadowColor'},
       {prop: 'style.dropShadowDistance', name: 'shadowDistance', step: 1},

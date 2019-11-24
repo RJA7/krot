@@ -1,5 +1,3 @@
-const {floatPrecision} = require('./common');
-
 module.exports = class IconComponent {
   getInitialModel() {
     return {
@@ -33,10 +31,10 @@ module.exports = class IconComponent {
 
     const controls = [
       {prop: 'key'},
-      {prop: 'x'},
-      {prop: 'y'},
-      {prop: 'scale.x', floatPrecision},
-      {prop: 'scale.y', floatPrecision},
+      {prop: 'x', step: 1},
+      {prop: 'y', step: 1},
+      {prop: 'scale.x'},
+      {prop: 'scale.y'},
       {
         prop: 'texture',
         descriptor: {

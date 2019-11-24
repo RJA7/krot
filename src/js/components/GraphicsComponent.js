@@ -1,4 +1,4 @@
-const {floatPrecision, debugPosition} = require('./common');
+const {debugPosition} = require('./common');
 
 module.exports = class GraphicsComponent {
   constructor() {
@@ -32,12 +32,12 @@ module.exports = class GraphicsComponent {
       {prop: 'name'},
       {prop: 'x', step: 1},
       {prop: 'y', step: 1},
-      {prop: 'scale.x', step: floatPrecision},
-      {prop: 'scale.y', step: floatPrecision},
-      {prop: 'pivot.x', step: floatPrecision},
-      {prop: 'pivot.y', step: floatPrecision},
-      {prop: 'angle', step: floatPrecision},
-      {prop: 'alpha', min: 0, max: 1, step: floatPrecision},
+      {prop: 'scale.x'},
+      {prop: 'scale.y'},
+      {prop: 'pivot.x', step: 1},
+      {prop: 'pivot.y', step: 1},
+      {prop: 'angle'},
+      {prop: 'alpha', min: 0, max: 1},
       {prop: 'visible'},
       {prop: 'tint', color: true},
       {prop: 'blendMode', list: PIXI.BLEND_MODES},

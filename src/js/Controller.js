@@ -17,7 +17,11 @@ class Controller {
           this.gui.addColor(context, control.prop) :
           this.gui.add(context, control.prop, control.list);
 
-        ['name', 'min', 'max', 'step'].forEach((v) => v in control && controller[v](control[v]));
+        ['name', 'min', 'max'].forEach((v) => v in control && controller[v](control[v]));
+
+        if (typeof controller.step === 'function') {
+          controller.step(control.step || app.data.controlStep);
+        }
       });
   }
 
