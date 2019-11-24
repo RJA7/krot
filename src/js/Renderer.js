@@ -152,10 +152,6 @@ module.exports = class Renderer {
     return component.createView();
   }
 
-  getExistingView(id) {
-    return id ? this.pool.get(id) : this.ground;
-  }
-
   update() {
     if (app.data !== this.prevData) {
       app.data.list.forEach((model, i) => {
@@ -165,6 +161,11 @@ module.exports = class Renderer {
         if (model !== prevModel) {
           const component = app.components.find((c) => c.type === model.type);
           component.render(view, model, prevModel);
+
+          if (!prevModel || model.parent !== prevModel.parent) {
+            const parent = this.pool.get(model.parent);
+            parent.addChild(view);
+          }
         }
       });
 

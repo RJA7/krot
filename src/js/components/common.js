@@ -7,22 +7,7 @@ const debugPosition = (view, graphics) => {
   graphics.endFill();
 };
 
-const addRegularDescriptor = (control) => {
-  control.descriptor = control.descriptor || {
-    set: (value) => {
-      const index = app.getModelIndex();
-      const data = {...app.data};
-      _.setWith(data, `list[${index}].${control.prop}`, value, _.clone);
-      app.setData(data);
-    },
-    get: () => {
-      return _.get(app.getModel(), control.prop);
-    },
-  };
-};
-
 module.exports = {
   floatPrecision,
   debugPosition,
-  addRegularDescriptor,
 };

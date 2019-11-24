@@ -140,8 +140,7 @@ module.exports = class TextComponent {
         iconView.scale.y = icon.scale.y;
         acc[icon.key] = iconView;
 
-        iconView.texture = PIXI.utils.TextureCache[model.texture] ?
-          PIXI.Texture.from(icon.texture) : app.renderer.noTexture;
+        iconView.texture = PIXI.utils.TextureCache[model.texture] || app.renderer.noTexture;
 
         return acc;
       }, {});
@@ -153,11 +152,6 @@ module.exports = class TextComponent {
 
     if (model.style !== prevModel.style) {
       view.style = model.style;
-    }
-
-    if (model.parent !== prevModel.parent) {
-      const parent = app.renderer.getExistingView(model.parent);
-      parent.addChild(view);
     }
   }
 

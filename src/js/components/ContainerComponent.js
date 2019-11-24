@@ -48,11 +48,6 @@ module.exports = class ContainerComponent {
     view.angle = model.angle;
     view.alpha = model.alpha;
     view.visible = model.visible;
-
-    if (model.parent !== prevModel.parent) {
-      const parent = app.renderer.getExistingView(model.parent);
-      parent.addChild(view);
-    }
   }
 
   debug(view, graphics) {

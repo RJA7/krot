@@ -65,14 +65,8 @@ module.exports = class SpriteComponent {
     view.interactive = model.interactive;
     view.buttonMode = model.buttonMode;
 
-    if (model.parent !== prevModel.parent) {
-      const parent = app.renderer.getExistingView(model.parent);
-      parent.addChild(view);
-    }
-
     if (model.texture !== prevModel.texture) {
-      view.texture = PIXI.utils.TextureCache[model.texture] ?
-        PIXI.Texture.from(model.texture) : app.renderer.noTexture;
+      view.texture = PIXI.utils.TextureCache[model.texture] || app.renderer.noTexture;
     }
   }
 

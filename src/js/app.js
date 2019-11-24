@@ -23,7 +23,6 @@ class App {
     this.watcher = new Watcher();
     this.token = '/* 4@4!8|raw|8!4@ */';
     this.history = new History();
-    this.controller = null;
     this.filePath = '';
     this.onDataChange = new Signal();
 
