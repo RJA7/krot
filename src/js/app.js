@@ -21,15 +21,6 @@ class App {
   constructor() {
     window.app = this;
 
-    this.data = this.createData();
-    this.watcher = new Watcher();
-    this.token = '/* 4@4!8|raw|8!4@ */';
-    this.history = new History();
-    this.filePath = '';
-    this.onDataChange = new Signal();
-    this.components = components.map((Component) => new Component());
-    this.renderer = new Renderer(this.data);
-
     this.config = {
       imagesDirs: [],
       atlasesDirs: [],
@@ -39,13 +30,26 @@ class App {
       imports: `import * as PIXI from 'pixi.js';`,
     };
 
+    this.token = '/* 4@4!8|raw|8!4@ */';
+    this.data = this.createData();
+    this.watcher = new Watcher();
+    this.history = new History();
+    this.filePath = '';
+    this.onDataChange = new Signal();
+    this.components = components.map((Component) => new Component());
+    this.renderer = new Renderer(this.data);
+    this.menu = new Menu();
+
     new MetaController();
-    new Menu();
 
     window.onbeforeunload = async (e) => {
       e.returnValue = false;
       const cancelled = await this.requestSave();
-      !cancelled && remote.getCurrentWindow().close();
+
+      if (!cancelled) {
+        window.onbeforeunload = () => void 0;
+        remote.getCurrentWindow().close();
+      }
     };
   }
 
@@ -58,6 +62,7 @@ class App {
       controlStep: 1.0,
       width: 640,
       height: 960,
+      debug: false,
     };
   }
 
@@ -87,7 +92,7 @@ class App {
 
     const data = this.createData();
 
-    const rootModel = this.components.find((c) => c.type === 'Container').getInitialModel();
+    const rootModel = this.components.find((c) => c.type === 'Container').createModel();
     rootModel.id = uuid();
     rootModel.type = 'Container';
     rootModel.name = 'root';
@@ -187,7 +192,7 @@ class App {
     if (parentIndex === -1) return;
 
     const parentModel = this.data.list[parentIndex];
-    const model = this.components.find((c) => c.type === type).getInitialModel();
+    const model = this.components.find((c) => c.type === type).createModel();
     model.id = uuid();
     model.type = type;
     model.parent = parentModel.id;

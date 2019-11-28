@@ -6,7 +6,7 @@ module.exports = class Watcher {
     this.timeoutId = -1;
   }
 
-  watch(config) {
+  watch(config, filePath) {
     this.clear();
 
     Object.keys(config)
@@ -22,7 +22,7 @@ module.exports = class Watcher {
 
             fileNames.forEach((fileName) => {
               const watcher = fs.watch(`${dir}/${fileName}`);
-              watcher.on('change', () => this.scheduleReload(config));
+              watcher.on('change', () => this.scheduleReload(filePath));
               this.watchers.push(watcher);
             });
           });
@@ -30,14 +30,9 @@ module.exports = class Watcher {
       });
   }
 
-  scheduleReload(config) {
+  scheduleReload(filePath) {
     clearTimeout(this.timeoutId);
-    this.timeoutId = setTimeout(() => this.reload(config), 100);
-  }
-
-  async reload(config) {
-    await app.renderer.load(config);
-    app.setData(app.data, true);
+    this.timeoutId = setTimeout(() => app.menu.load(filePath), 100);
   }
 
   clear() {

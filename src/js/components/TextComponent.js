@@ -1,4 +1,3 @@
-const {debugPosition} = require('./common');
 const IconComponent = require('./IconComponent');
 
 const baseLineList = ['top', 'hanging', 'middle', 'alphabetic', 'ideographic', 'bottom'];
@@ -19,7 +18,7 @@ module.exports = class TextComponent {
     return new PIXI.Text();
   }
 
-  getInitialModel() {
+  createModel() {
     return {
       name: '',
       x: 0,
@@ -95,7 +94,7 @@ module.exports = class TextComponent {
         name: '+ Add icon',
         descriptor: {
           value: () => {
-            const iconModel = this.iconComponent.getInitialModel();
+            const iconModel = this.iconComponent.createModel();
             const icons = [...app.getModel().icons, iconModel];
             app.updateItem({icons}, true);
             app.setData({minorComponent: this.iconComponent, minorComponentData: icons.length - 1});
@@ -168,7 +167,7 @@ module.exports = class TextComponent {
     [lt, rt, rb, lb].forEach((pos) => graphics.lineTo(pos.x, pos.y));
   }
 
-  debug(view, graphics) {
+  debug(view, model, graphics) {
     {
       const localLT = new PIXI.Point(-view.anchor.x * view.canvas.width, -view.anchor.y * view.canvas.height);
       const localRB = new PIXI.Point((1 - view.anchor.x) * view.canvas.width, (1 - view.anchor.y) * view.canvas.height);
@@ -180,7 +179,5 @@ module.exports = class TextComponent {
       const localRB = new PIXI.Point((1 - view.anchor.x) * view.maxWidth, (1 - view.anchor.y) * view.maxHeight);
       this.drawRect(view, graphics, localLT, localRB);
     }
-
-    debugPosition(view, graphics);
   }
 };

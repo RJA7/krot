@@ -1,5 +1,3 @@
-const {debugPosition} = require('./common');
-
 module.exports = class NineSlicePlaneComponent {
   constructor() {
     this.type = 'NineSlicePlane';
@@ -9,7 +7,7 @@ module.exports = class NineSlicePlaneComponent {
     return new PIXI.NineSlicePlane(app.renderer.noTexture);
   }
 
-  getInitialModel() {
+  createModel() {
     return {
       name: '',
       x: 0,
@@ -102,7 +100,7 @@ module.exports = class NineSlicePlaneComponent {
     }
   }
 
-  debug(view, graphics) {
+  debug(view, model, graphics) {
     const lt = new PIXI.Point(view.leftWidth, view.topHeight);
     const rt = new PIXI.Point(view.width - view.rightWidth, view.topHeight);
     const rb = new PIXI.Point(view.width - view.rightWidth, view.height - view.bottomHeight);
@@ -118,7 +116,5 @@ module.exports = class NineSlicePlaneComponent {
       const pos = graphics.toLocal(local, view);
       graphics.lineTo(pos.x, pos.y);
     });
-
-    debugPosition(view, graphics);
   }
 };

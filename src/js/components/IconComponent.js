@@ -1,5 +1,5 @@
 module.exports = class IconComponent {
-  getInitialModel() {
+  createModel() {
     return {
       key: '',
       x: '',

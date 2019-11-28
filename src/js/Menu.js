@@ -31,7 +31,7 @@ class MenuHandler {
     this.set();
   }
 
-  set(config) {
+  set() {
     const template = [
       {
         label: 'File',
@@ -201,9 +201,8 @@ class MenuHandler {
 
   async load(filePath) {
     const config = this.getConfig(filePath);
-    this.set(config);
     app.config = config;
-    app.watcher.watch(config);
+    app.watcher.watch(config, filePath);
     await app.renderer.load(config);
   }
 }

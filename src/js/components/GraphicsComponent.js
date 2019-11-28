@@ -1,5 +1,3 @@
-const {debugPosition} = require('./common');
-
 module.exports = class GraphicsComponent {
   constructor() {
     this.type = 'Graphics';
@@ -9,7 +7,7 @@ module.exports = class GraphicsComponent {
     return new PIXI.Graphics();
   }
 
-  getInitialModel() {
+  createModel() {
     return {
       name: '',
       x: 0,
@@ -66,7 +64,7 @@ module.exports = class GraphicsComponent {
     }
   }
 
-  debug(view, graphics) {
-    debugPosition(view, graphics);
+  debug(view, model, graphics) {
+    //
   }
 };

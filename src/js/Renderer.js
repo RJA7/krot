@@ -169,20 +169,30 @@ module.exports = class Renderer {
         }
       });
 
-      if (
-        app.data.modelId !== this.prevData.modelId ||
-        app.data.minorComponent !== this.prevData.minorComponent ||
-        app.data.minorComponentData !== this.prevData.minorComponentData ||
-        app.data.controlStep !== this.prevData.controlStep
-      ) {
-        this.controller && this.controller.destroy();
+      const model = app.getModel();
+      this.debugGraphics.clear();
 
-        const model = app.getModel();
-        const component = app.data.minorComponent ||
-          model && app.components.find((c) => c.type === model.type);
-
-        if (component) {
+      if (model) {
+        if (
+          app.data.modelId !== this.prevData.modelId ||
+          app.data.minorComponent !== this.prevData.minorComponent ||
+          app.data.minorComponentData !== this.prevData.minorComponentData ||
+          app.data.controlStep !== this.prevData.controlStep
+        ) {
+          const component = app.data.minorComponent || app.components.find((c) => c.type === model.type);
+          this.controller && this.controller.destroy();
           this.controller = new Controller(component);
+        }
+
+        if (app.data.debug) {
+          const component = app.components.find((c) => c.type === model.type);
+          const view = this.pool.get(model.id);
+          const position = this.debugGraphics.toLocal(view, view.parent);
+          this.debugGraphics.beginFill(0xA9B7C6, 1);
+          this.debugGraphics.drawCircle(position.x, position.y, 4);
+          this.debugGraphics.endFill();
+
+          component.debug(view, model, this.debugGraphics);
         }
       }
 

@@ -1,5 +1,3 @@
-const {debugPosition} = require('./common');
-
 module.exports = class ContainerComponent {
   constructor() {
     this.type = 'Container';
@@ -9,7 +7,7 @@ module.exports = class ContainerComponent {
     return new PIXI.Container();
   }
 
-  getInitialModel() {
+  createModel() {
     return {
       name: '',
       x: 0,
@@ -50,7 +48,7 @@ module.exports = class ContainerComponent {
     view.visible = model.visible;
   }
 
-  debug(view, graphics) {
-    debugPosition(view, graphics);
+  debug(view, model, graphics) {
+    //
   }
 };
