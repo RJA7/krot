@@ -17,7 +17,7 @@ module.exports = class IconComponent {
         const icons = [...model.icons];
 
         _.setWith(icons, `[${iconIndex}].${control.prop}`, value);
-        app.updateItem({icons});
+        app.updateItem({icons}, true);
       },
       get() {
         const model = app.getModel();
@@ -43,7 +43,7 @@ module.exports = class IconComponent {
 
             app.updateItem({
               icons: model.icons.map((ic, i) => i === iconIndex ? {...ic, texture} : ic),
-            });
+            }, true);
           },
           get() {
             const model = app.getModel();
@@ -58,7 +58,7 @@ module.exports = class IconComponent {
           value() {
             const model = app.getModel();
             app.setData({minorComponent: null}, true);
-            app.updateItem({icons: model.icons.filter((ic, i) => i !== iconIndex)});
+            app.updateItem({icons: model.icons.filter((ic, i) => i !== iconIndex)}, true);
           },
         },
       },

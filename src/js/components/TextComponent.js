@@ -9,7 +9,7 @@ module.exports = class TextComponent {
 
     app.onDataChange.add((data, prevData) => {
       if (data.minorComponent === this.iconComponent && data.modelId !== prevData.modelId) {
-        app.setData({minorComponent: null, minorComponentData: null});
+        app.setData({minorComponent: null, minorComponentData: null}, true);
       }
     });
   }

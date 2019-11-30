@@ -24,8 +24,12 @@ class MenuHandler {
       [['ctrl+d', 'command+d'], () => app.move(-1)],
       [['ctrl+shift+d', 'command+shift+d'], () => app.move(1)],
       [['ctrl+c', 'command+c'], () => app.clone()],
+      [['del'], () => app.destroy()],
     ].forEach(([shortcut, handler]) => {
-      Mousetrap.bind(shortcut, handler, 'keydown');
+      Mousetrap.bind(shortcut, (e) => {
+        e.preventDefault();
+        handler();
+      }, 'keydown');
     });
 
     this.set();
@@ -84,13 +88,13 @@ class MenuHandler {
           {
             label: 'Move down',
             click: () => {
-              app.move(-1);
+              app.move(1);
             },
           },
           {
             label: 'Move up',
             click: () => {
-              app.move(1);
+              app.move(-1);
             },
           },
           {type: 'separator'},

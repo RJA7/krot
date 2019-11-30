@@ -94,10 +94,7 @@ module.exports = class NineSlicePlaneComponent {
     view.blendMode = model.blendMode;
     view.interactive = model.interactive;
     view.buttonMode = model.buttonMode;
-
-    if (model.texture !== prevModel.texture) {
-      view.texture = PIXI.utils.TextureCache[model.texture] || app.renderer.noTexture;
-    }
+    view.texture = PIXI.utils.TextureCache[model.texture] || app.renderer.noTexture;
   }
 
   debug(view, model, graphics) {

@@ -8,13 +8,14 @@ module.exports = class MetaController {
     this.gui.add(this, 'debug');
     this.gui.add(this, 'align');
 
-    const widthControl = this.gui.add(this, 'width');
-    const heightControl = this.gui.add(this, 'height');
+    ['width', 'height'].forEach((prop) => {
+      const control = this.gui.add(this, prop);
+      control.min(0);
+      control.step(1);
+      control.onFinishChange(() => app.putHistoryIfChanged());
+    });
 
-    widthControl.min(0);
-    heightControl.min(0);
-    widthControl.step(1);
-    heightControl.step(1);
+    app.onDataChange.add(() => this.gui.updateDisplay());
   }
 
   get debug() {
@@ -34,7 +35,7 @@ module.exports = class MetaController {
   }
 
   set step(value) {
-    app.setData({controlStep: value});
+    app.setData({controlStep: Number(value)});
   }
 
   get width() {
@@ -42,7 +43,7 @@ module.exports = class MetaController {
   }
 
   set width(value) {
-    app.setData({width: value});
+    app.setData({width: value}, true);
   }
 
   get height() {
@@ -50,6 +51,6 @@ module.exports = class MetaController {
   }
 
   set height(value) {
-    app.setData({height: value});
+    app.setData({height: value}, true);
   }
 };

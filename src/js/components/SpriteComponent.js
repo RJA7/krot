@@ -62,10 +62,7 @@ module.exports = class SpriteComponent {
     view.blendMode = model.blendMode;
     view.interactive = model.interactive;
     view.buttonMode = model.buttonMode;
-
-    if (model.texture !== prevModel.texture) {
-      view.texture = PIXI.utils.TextureCache[model.texture] || app.renderer.noTexture;
-    }
+    view.texture = PIXI.utils.TextureCache[model.texture] || app.renderer.noTexture;
   }
 
   createWidthControlDescriptor() {
@@ -73,7 +70,7 @@ module.exports = class SpriteComponent {
       set(width) {
         const model = app.getModel();
         const texture = PIXI.utils.TextureCache[model.texture] || app.renderer.noTexture;
-        app.updateItem({scale: {...model.scale, x: width / texture.width}});
+        app.updateItem({scale: {...model.scale, x: width / texture.width}}, true);
       },
       get() {
         const model = app.getModel();
@@ -88,7 +85,7 @@ module.exports = class SpriteComponent {
       set(height) {
         const model = app.getModel();
         const texture = PIXI.utils.TextureCache[model.texture] || app.renderer.noTexture;
-        app.updateItem({scale: {...model.scale, y: height / texture.height}});
+        app.updateItem({scale: {...model.scale, y: height / texture.height}}, true);
       },
       get() {
         const model = app.getModel();

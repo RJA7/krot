@@ -1,5 +1,6 @@
 const {Controller} = require('./Controller');
 const WebFont = require('webfontloader');
+const Tree = require('./tree/Tree');
 const Pool = require('./Pool');
 const path = require('path');
 const fs = require('fs');
@@ -11,20 +12,29 @@ module.exports = class Renderer {
     this.pixiApp.renderer.backgroundColor = 0x2B2B2B;
     this.mouse = this.pixiApp.renderer.plugins.interaction.mouse;
 
+    this.bg = new PIXI.Container();
+    this.bg.interactive = true;
+    this.bg.hitArea = new PIXI.Rectangle(0, 0, 4000, 4000);
+    this.pixiApp.stage.addChild(this.bg);
+
     this.ground = new PIXI.Container();
     this.pixiApp.stage.addChild(this.ground);
 
     this.debugGraphics = new PIXI.Graphics();
     this.ground.addChild(this.debugGraphics);
 
+    this.tree = new Tree();
+    this.pixiApp.stage.addChild(this.tree.root);
+
     this.drag = {dx: 0, dy: 0};
     this.prevData = prevData;
     this.controller = null;
     this.fonts = [];
-    this.pool = new Pool(this.createView.bind(this));
+    this.pool = null;
+    this.justLoaded = false;
 
-    this.pixiApp.renderer.plugins.interaction.on('mousedown', this.handleMouseDown, this);
-    this.pixiApp.renderer.plugins.interaction.on('mouseup', this.handleMouseUp, this);
+    this.bg.on('mousedown', this.handleMouseDown, this);
+    window.addEventListener('mouseup', this.handleMouseUp.bind(this));
     this.pixiApp.view.addEventListener('wheel', this.handleWheelRotate.bind(this));
     this.pixiApp.ticker.add(this.update, this);
 
@@ -66,6 +76,8 @@ module.exports = class Renderer {
     loader.defaultQueryString = String(Date.now());
 
     this.noTexture = PIXI.Texture.from(this.createNoTextureCanvas());
+    this.pool = new Pool(this.createView.bind(this));
+    this.justLoaded = true;
     this.fonts = [...config.standardFonts, ...config.googleFonts];
 
     config.imagesDirs.forEach((dir) => {
@@ -142,62 +154,81 @@ module.exports = class Renderer {
   }
 
   align() {
-    this.ground.scale.set(1);
-    this.ground.x = (window.innerWidth - this.ground.width) / 2;
-    this.ground.y = (window.innerHeight - this.ground.height) / 2;
+    this.ground.scale.set(Math.min(1, window.innerWidth / app.data.width * 0.8, window.innerHeight / app.data.height * 0.8));
+    this.ground.x = (app.data.treeWidth + window.innerWidth - app.data.width * this.ground.scale.x) / 2;
+    this.ground.y = (window.innerHeight - app.data.height * this.ground.scale.y) / 2;
   }
 
   createView(type) {
     const component = app.components.find((c) => c.type === type);
-    return component.createView();
+    const view = component.createView();
+    view.sortableChildren = true;
+
+    return view;
   }
 
   update() {
     if (app.data !== this.prevData) {
-      app.data.list.forEach((model, i) => {
-        const prevModel = this.prevData.list[i];
-        const view = this.pool.get(model.id, model.type);
+      this.render();
+      this.prevData = app.data;
+    }
+  }
 
-        if (model !== prevModel) {
-          const component = app.components.find((c) => c.type === model.type);
-          component.render(view, model, prevModel);
+  render() {
+    app.data.list.forEach((model, i) => {
+      const prevModel = this.prevData.list[i];
+      const view = this.pool.get(model.id, model.type);
+      view.zIndex = i;
 
-          if (!prevModel || model.parent !== prevModel.parent) {
-            const parent = this.pool.get(model.parent);
-            parent.addChild(view);
-          }
-        }
-      });
+      if (model !== prevModel) {
+        const component = app.components.find((c) => c.type === model.type);
+        component.render(view, model, prevModel);
 
-      const model = app.getModel();
-      this.debugGraphics.clear();
+        const parent = model.parent ? this.pool.get(model.parent) : this.ground;
+        parent.addChild(view);
+      }
+    });
 
-      if (model) {
-        if (
-          app.data.modelId !== this.prevData.modelId ||
-          app.data.minorComponent !== this.prevData.minorComponent ||
-          app.data.minorComponentData !== this.prevData.minorComponentData ||
-          app.data.controlStep !== this.prevData.controlStep
-        ) {
-          const component = app.data.minorComponent || app.components.find((c) => c.type === model.type);
-          this.controller && this.controller.destroy();
-          this.controller = new Controller(component);
-        }
+    const model = app.getModel();
+    this.ground.setChildIndex(this.debugGraphics, this.ground.children.length - 1);
+    this.debugGraphics.clear();
 
-        if (app.data.debug) {
-          const component = app.components.find((c) => c.type === model.type);
-          const view = this.pool.get(model.id);
-          const position = this.debugGraphics.toLocal(view, view.parent);
-          this.debugGraphics.beginFill(0xA9B7C6, 1);
-          this.debugGraphics.drawCircle(position.x, position.y, 4);
-          this.debugGraphics.endFill();
+    this.debugGraphics.lineStyle(4, 0x00aa00, 1, 1);
+    this.debugGraphics.drawRect(0, 0, app.data.width, app.data.height);
+    this.debugGraphics.lineStyle();
 
-          component.debug(view, model, this.debugGraphics);
-        }
+    if (model) {
+      if (
+        app.data.modelId !== this.prevData.modelId ||
+        app.data.minorComponent !== this.prevData.minorComponent ||
+        app.data.minorComponentData !== this.prevData.minorComponentData ||
+        app.data.controlStep !== this.prevData.controlStep
+      ) {
+        const component = app.data.minorComponent || app.components.find((c) => c.type === model.type);
+        this.controller && this.controller.destroy();
+        this.controller = new Controller(component);
       }
 
-      this.prevData = app.data;
-      this.pool.removeUnused();
+      if (app.data.debug) {
+        const component = app.components.find((c) => c.type === model.type);
+        const view = this.pool.get(model.id);
+        const position = this.debugGraphics.toLocal(view, view.parent);
+        this.debugGraphics.beginFill(0x1ED36F, 1);
+        this.debugGraphics.drawCircle(position.x, position.y, 4);
+        this.debugGraphics.endFill();
+
+        component.debug(view, model, this.debugGraphics);
+      }
     }
+
+    this.tree.render(app.data, this.prevData);
+    this.controller && this.controller.gui.updateDisplay();
+
+    if (this.justLoaded) {
+      this.justLoaded = false;
+      this.align();
+    }
+
+    this.pool.removeUnused();
   }
 };

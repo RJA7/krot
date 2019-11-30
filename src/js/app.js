@@ -1,3 +1,4 @@
+const {moveNode, getNodeEndIndex} = require('./utils');
 const {jsTemplate, tsTemplate} = require('./template');
 const MetaController = require('./MetaController');
 const components = require('./components');
@@ -32,6 +33,8 @@ class App {
 
     this.token = '/* 4@4!8|raw|8!4@ */';
     this.data = this.createData();
+    this.data.treeWidth = 0;
+
     this.watcher = new Watcher();
     this.history = new History();
     this.filePath = '';
@@ -42,15 +45,17 @@ class App {
 
     new MetaController();
 
-    window.onbeforeunload = async (e) => {
-      e.returnValue = false;
-      const cancelled = await this.requestSave();
+    window.addEventListener('mousedown', () => this.putHistoryIfChanged());
 
-      if (!cancelled) {
-        window.onbeforeunload = () => void 0;
-        remote.getCurrentWindow().close();
-      }
-    };
+    // window.onbeforeunload = async (e) => { // todo uncomment
+    //   e.returnValue = false;
+    //   const cancelled = await this.requestSave();
+    //
+    //   if (!cancelled) {
+    //     window.onbeforeunload = () => void 0;
+    //     remote.getCurrentWindow().close();
+    //   }
+    // };
   }
 
   createData() {
@@ -63,6 +68,7 @@ class App {
       width: 640,
       height: 960,
       debug: false,
+      treeWidth: 200,
     };
   }
 
@@ -76,6 +82,14 @@ class App {
   updateItem(patch, skipHistory) {
     const id = this.data.modelId;
     this.setData({list: this.data.list.map((m) => m.id === id ? {...m, ...patch} : m)}, skipHistory);
+  }
+
+  putHistory() {
+    this.history.put(this.data);
+  }
+
+  putHistoryIfChanged() {
+    !_.isEqual(this.data, this.history.getItem()) && app.putHistory();
   }
 
   getModel(id = this.data.modelId) {
@@ -153,35 +167,46 @@ class App {
   }
 
   move(stepZ) {
-    const srcIndex = this.getModelIndex();
+    const modelIndex = this.getModelIndex();
 
-    if (srcIndex === -1) return;
+    if (modelIndex < 1) return;
 
-    const model = this.data.list[srcIndex];
-    const parentIds = this.data.list.map((m) => m.parent);
-    const minIndex = parentIds.indexOf(model.parent);
-    const maxIndex = parentIds.lastIndexOf(model.parent) + 1;
-    const dstIndex = srcIndex + stepZ;
-
-    if (dstIndex < minIndex || dstIndex > maxIndex) return;
-
-    const list = [...this.data.list];
-    list[srcIndex] = this.data.list[dstIndex];
-    list[dstIndex] = this.data.list[srcIndex];
-    this.setData({list});
+    const model = this.data.list[modelIndex];
+    const list = moveNode(this.data.list, model.id, stepZ);
+    list && this.setData({list});
   }
 
   clone() {
+    const modelIndex = this.getModelIndex();
 
+    if (modelIndex < 1) return;
+
+    const list = [...this.data.list];
+    const model = list[modelIndex];
+    const endIndex = getNodeEndIndex(this.data.list, modelIndex);
+    const items = _.cloneDeep(this.data.list.slice(modelIndex, endIndex));
+    const map = {[model.parent]: model.parent};
+
+    items.forEach((item) => {
+      const newId = uuid();
+      map[item.id] = newId;
+      item.id = newId;
+      item.parent = map[item.parent];
+    });
+
+    list.splice(endIndex, 0, ...items);
+    this.setData({list, modelId: items[0].id});
   }
 
   destroy() {
-    const index = this.getModelIndex();
+    const modelIndex = this.getModelIndex();
 
-    if (index === -1 || index === 0) return;
+    if (modelIndex < 1) return;
+
+    const endIndex = getNodeEndIndex(this.data.list, modelIndex);
 
     this.setData({
-      list: this.data.list.filter((m, i) => i !== index),
+      list: this.data.list.filter((m, i) => i < modelIndex || i >= endIndex),
       modelId: this.data.list[0].id,
     });
   }
@@ -192,16 +217,14 @@ class App {
     if (parentIndex === -1) return;
 
     const parentModel = this.data.list[parentIndex];
+    const parentEndIndex = getNodeEndIndex(this.data.list, parentIndex);
     const model = this.components.find((c) => c.type === type).createModel();
     model.id = uuid();
     model.type = type;
     model.parent = parentModel.id;
 
-    const lastChildIndex = this.data.list.map((m) => m.parent).lastIndexOf(parentModel.id);
-    const index = (lastChildIndex === -1 ? parentIndex : lastChildIndex) + 1;
-
     this.setData({
-      list: [...this.data.list.slice(0, index), model, ...this.data.list.slice(index)],
+      list: [...this.data.list.slice(0, parentEndIndex), model, ...this.data.list.slice(parentEndIndex)],
       modelId: model.id,
     });
   }
@@ -235,7 +258,7 @@ class App {
   }
 
   validate() {
-
+    // check for name copies
   }
 }
 

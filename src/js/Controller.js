@@ -22,8 +22,14 @@ class Controller {
         if (typeof controller.step === 'function') {
           controller.step(control.step || app.data.controlStep);
         }
+
+        controller.onFinishChange(this.handleFinishChange);
       });
   }
+
+  handleFinishChange = () => {
+    app.putHistoryIfChanged();
+  };
 
   createRegularDescriptor(control) {
     return {
@@ -31,7 +37,7 @@ class Controller {
         const index = app.getModelIndex();
         const data = {...app.data};
         _.setWith(data, `list[${index}].${control.prop}`, value, _.clone);
-        app.setData(data);
+        app.setData(data, true);
       },
       get: () => {
         return _.get(app.getModel(), control.prop);
